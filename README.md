@@ -1,1 +1,0 @@
-# success-together-academy-v1
