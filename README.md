@@ -118,6 +118,13 @@ docker-compose -f docker-compose.dev.yml logs -f
 docker-compose -f docker-compose.prod.yml logs -f
 ```
 
+**Restart specific service:**
+```bash
+docker restart success-academy-api      # Restart API server
+docker restart success-academy-postgres # Restart PostgreSQL
+docker restart success-academy-pgadmin  # Restart pgAdmin
+```
+
 ### Docker Files Overview
 
 - `Dockerfile` - Multi-stage production build using Nginx
@@ -133,17 +140,40 @@ docker-compose -f docker-compose.prod.yml logs -f
 ```
 success-together-academy-v1/
 ├── src/
+│   ├── components/
+│   │   └── common/           # Reusable components (Button, Card, Table, Modal, etc.)
+│   ├── layouts/
+│   │   └── AdminLayout.jsx   # Admin dashboard layout
 │   ├── pages/
+│   │   ├── admin/            # Admin pages (Dashboard, Users, Roles, Courses, etc.)
 │   │   └── Home.jsx          # Home page component
+│   ├── services/
+│   │   └── api.js            # API service utilities
 │   ├── styles/
 │   │   └── Home.css          # Home page styles
 │   ├── App.jsx               # Main app component
 │   ├── App.css               # App-level styles
 │   ├── main.jsx              # Application entry point
 │   └── index.css             # Global styles
+├── server/
+│   ├── config/
+│   │   └── database.js       # PostgreSQL connection configuration
+│   ├── models/
+│   │   ├── User.js           # User model with CRUD operations
+│   │   └── Role.js           # Role model with CRUD operations
+│   ├── routes/
+│   │   ├── users.js          # User API routes
+│   │   ├── roles.js          # Role API routes
+│   │   └── auth.js           # Authentication routes (register, login)
+│   ├── migrations/
+│   │   └── migrate.js        # Database migrations
+│   ├── scripts/
+│   │   └── verify-db.js      # Database verification script
+│   ├── server.js             # Express server entry point
+│   └── package.json          # Backend dependencies
 ├── index.html                # HTML template
 ├── vite.config.js            # Vite configuration
-├── package.json              # Dependencies and scripts
+├── package.json              # Frontend dependencies
 ├── Dockerfile                # Production Dockerfile
 ├── Dockerfile.dev            # Development Dockerfile
 ├── docker-compose.yml        # Docker Compose configuration
@@ -155,19 +185,52 @@ success-together-academy-v1/
 
 ## Technologies Used
 
+### Frontend
 - React 18
 - React Router DOM
 - Vite
 - CSS3 (Custom properties, Flexbox, Grid)
+
+### Backend
+- Node.js & Express
+- PostgreSQL
+- bcryptjs (Password hashing)
+
+### DevOps
 - Docker & Docker Compose
 - Nginx (for production)
+- pgAdmin 4 (Database management)
 
 ## Current Status
 
 - Basic setup complete
 - Home page implemented
 - Docker configuration (dev & production)
-- Additional features coming soon...
+- Admin dashboard with reusable components
+- User CRUD operations with PostgreSQL
+- Role CRUD operations
+- Self-registration with role-based control
+- pgAdmin 4 for database management
+
+## Troubleshooting
+
+### Restart API Server
+If you encounter route not found errors or need to reload server changes:
+```bash
+docker restart success-academy-api
+```
+
+### Run Database Migrations
+After schema changes, run migrations:
+```bash
+docker exec -it success-academy-api npm run migrate
+```
+
+### Verify Database
+Check database connection and data:
+```bash
+docker exec -it success-academy-api npm run verify-db
+```
 
 ## License
 

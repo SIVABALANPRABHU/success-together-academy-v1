@@ -19,6 +19,11 @@ const AdminLayout = () => {
       path: '/admin/users',
     },
     {
+      icon: '🎭',
+      label: 'Roles',
+      path: '/admin/roles',
+    },
+    {
       icon: '📚',
       label: 'Courses',
       path: '/admin/courses',

@@ -3,6 +3,7 @@ import Home from './pages/Home'
 import AdminLayout from './layouts/AdminLayout'
 import Dashboard from './pages/admin/Dashboard'
 import Users from './pages/admin/Users'
+import Roles from './pages/admin/Roles'
 import Courses from './pages/admin/Courses'
 import Lessons from './pages/admin/Lessons'
 import Payments from './pages/admin/Payments'
@@ -18,6 +19,7 @@ function App() {
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<Dashboard />} />
           <Route path="users" element={<Users />} />
+          <Route path="roles" element={<Roles />} />
           <Route path="courses" element={<Courses />} />
           <Route path="lessons" element={<Lessons />} />
           <Route path="payments" element={<Payments />} />
