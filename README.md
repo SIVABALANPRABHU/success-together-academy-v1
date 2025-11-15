@@ -201,6 +201,21 @@ success-together-academy-v1/
 - Nginx (for production)
 - pgAdmin 4 (Database management)
 
+## Default Credentials
+
+### SuperAdmin Account
+
+A default SuperAdmin account is created during database migration:
+
+- **Name:** Super Admin
+- **Email:** `superadmin@academy.com`
+- **Password:** `admin@123`
+- **Role:** SuperAdmin
+
+⚠️ **Important:** Only users with the "SuperAdmin" role can access the `/admin` dashboard. Change the default password after first login.
+
+For detailed information, see [SUPERADMIN_CREDENTIALS.md](./SUPERADMIN_CREDENTIALS.md)
+
 ## Current Status
 
 - Basic setup complete
@@ -211,6 +226,8 @@ success-together-academy-v1/
 - Role CRUD operations
 - Self-registration with role-based control
 - pgAdmin 4 for database management
+- Authentication system (Login, Register, Logout)
+- Role-based access control (SuperAdmin required for admin dashboard)
 
 ## Troubleshooting
 

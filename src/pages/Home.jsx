@@ -1,4 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
+import { Link } from 'react-router-dom'
+import { useAuth } from '../contexts/AuthContext'
 import '../styles/Home.css'
 
 const Home = () => {
@@ -6,6 +8,7 @@ const Home = () => {
   const [scrolled, setScrolled] = useState(false)
   const featuresRef = useRef(null)
   const ctaRef = useRef(null)
+  const { isAuthenticated, user, logout } = useAuth()
 
   const closeMenu = () => {
     setIsMenuOpen(false)
@@ -60,8 +63,31 @@ const Home = () => {
             <a href="#courses" className="nav-link" onClick={closeMenu}>Courses</a>
             <a href="#about" className="nav-link" onClick={closeMenu}>About</a>
             <a href="#contact" className="nav-link" onClick={closeMenu}>Contact</a>
-            <button className="nav-button" onClick={closeMenu}>Login</button>
-            <button className="nav-button primary" onClick={closeMenu}>Sign Up</button>
+            {isAuthenticated() ? (
+              <>
+                <Link 
+                  to={user?.redirect_url || '/'} 
+                  className="nav-button"
+                  onClick={closeMenu}
+                >
+                  Dashboard
+                </Link>
+                <button 
+                  className="nav-button primary" 
+                  onClick={() => {
+                    closeMenu();
+                    logout();
+                  }}
+                >
+                  Logout
+                </button>
+              </>
+            ) : (
+              <>
+                <Link to="/login" className="nav-button" onClick={closeMenu}>Login</Link>
+                <Link to="/register" className="nav-button primary" onClick={closeMenu}>Sign Up</Link>
+              </>
+            )}
           </div>
           <div className={`nav-toggle ${isMenuOpen ? 'active' : ''}`} onClick={() => setIsMenuOpen(!isMenuOpen)}>
             <span></span>
@@ -80,8 +106,16 @@ const Home = () => {
             Start your journey towards success today.
           </p>
           <div className="hero-buttons">
-            <button className="btn btn-primary">Explore Courses</button>
-            <button className="btn btn-secondary">Learn More</button>
+            {isAuthenticated() ? (
+              <Link to={user?.redirect_url || '/'} className="btn btn-primary">
+                Go to Dashboard
+              </Link>
+            ) : (
+              <>
+                <Link to="/register" className="btn btn-primary">Get Started</Link>
+                <Link to="/login" className="btn btn-secondary">Sign In</Link>
+              </>
+            )}
           </div>
         </div>
         <div className="hero-image">
@@ -145,7 +179,15 @@ const Home = () => {
         <div className="container">
           <h2 className="fade-in-up">Ready to Start Learning?</h2>
           <p className="fade-in-up" style={{ animationDelay: '0.2s' }}>Join thousands of students already on their learning journey</p>
-          <button className="btn btn-primary large pulse-animation">Get Started Now</button>
+          {isAuthenticated() ? (
+            <Link to={user?.redirect_url || '/'} className="btn btn-primary large pulse-animation">
+              Go to Dashboard
+            </Link>
+          ) : (
+            <Link to="/register" className="btn btn-primary large pulse-animation">
+              Get Started Now
+            </Link>
+          )}
         </div>
       </section>
 

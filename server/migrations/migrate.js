@@ -121,7 +121,8 @@ const insertRolesData = `
   INSERT INTO roles (name, description, can_self_register, home_page) VALUES
     ('Student', 'Student role for learning', true, '/student/dashboard'),
     ('Instructor', 'Instructor role for teaching', false, '/instructor/dashboard'),
-    ('Admin', 'Administrator role for system management', false, '/admin')
+    ('Admin', 'Administrator role for system management', false, '/admin'),
+    ('SuperAdmin', 'Super Administrator with full system access', false, '/admin')
   ON CONFLICT (name) DO UPDATE SET 
     can_self_register = EXCLUDED.can_self_register,
     description = EXCLUDED.description,
@@ -129,21 +130,25 @@ const insertRolesData = `
 `;
 
 const insertSampleData = async () => {
-  // Get Student role ID
+  // Get role IDs
   const studentRole = await pool.query("SELECT id FROM roles WHERE name = 'Student' LIMIT 1");
   const instructorRole = await pool.query("SELECT id FROM roles WHERE name = 'Instructor' LIMIT 1");
+  const superAdminRole = await pool.query("SELECT id FROM roles WHERE name = 'SuperAdmin' LIMIT 1");
   
   const studentRoleId = studentRole.rows[0]?.id;
   const instructorRoleId = instructorRole.rows[0]?.id;
+  const superAdminRoleId = superAdminRole.rows[0]?.id;
 
-  if (!studentRoleId || !instructorRoleId) {
+  if (!studentRoleId || !instructorRoleId || !superAdminRoleId) {
     console.log('Roles not found, skipping sample data insertion');
     return;
   }
 
   // Hash passwords
   const hashedPassword = await bcrypt.hash('password123', 10);
+  const superAdminPassword = await bcrypt.hash('admin@123', 10);
 
+  // Insert sample users
   const insertQuery = `
     INSERT INTO users (name, email, role_id, status, password) VALUES
       ($1, $2, $3, 'Active', $4),
@@ -159,6 +164,27 @@ const insertSampleData = async () => {
     'Mike Johnson', 'mike@example.com', instructorRoleId, hashedPassword,
     'Sarah Williams', 'sarah@example.com', studentRoleId, hashedPassword
   ]);
+
+  // Insert SuperAdmin user
+  const superAdminQuery = `
+    INSERT INTO users (name, email, role_id, status, password) VALUES
+      ($1, $2, $3, 'Active', $4)
+    ON CONFLICT (email) DO UPDATE SET
+      role_id = EXCLUDED.role_id,
+      password = EXCLUDED.password,
+      status = EXCLUDED.status;
+  `;
+
+  await pool.query(superAdminQuery, [
+    'Super Admin',
+    'superadmin@academy.com',
+    superAdminRoleId,
+    superAdminPassword
+  ]);
+
+  console.log('SuperAdmin user created:');
+  console.log('Email: superadmin@academy.com');
+  console.log('Password: admin@123');
 };
 
 async function waitForDatabase(maxRetries = 10, delay = 2000) {

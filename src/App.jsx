@@ -1,6 +1,10 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
+import { AuthProvider } from './contexts/AuthContext'
 import Home from './pages/Home'
+import Login from './pages/auth/Login'
+import Register from './pages/auth/Register'
 import AdminLayout from './layouts/AdminLayout'
+import ProtectedRoute from './components/common/ProtectedRoute/ProtectedRoute'
 import Dashboard from './pages/admin/Dashboard'
 import Users from './pages/admin/Users'
 import Roles from './pages/admin/Roles'
@@ -14,19 +18,30 @@ import './App.css'
 function App() {
   return (
     <Router>
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/admin" element={<AdminLayout />}>
-          <Route index element={<Dashboard />} />
-          <Route path="users" element={<Users />} />
-          <Route path="roles" element={<Roles />} />
-          <Route path="courses" element={<Courses />} />
-          <Route path="lessons" element={<Lessons />} />
-          <Route path="payments" element={<Payments />} />
-          <Route path="analytics" element={<Analytics />} />
-          <Route path="settings" element={<Settings />} />
-        </Route>
-      </Routes>
+      <AuthProvider>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route
+            path="/admin"
+            element={
+              <ProtectedRoute requiredRole="SuperAdmin">
+                <AdminLayout />
+              </ProtectedRoute>
+            }
+          >
+            <Route index element={<Dashboard />} />
+            <Route path="users" element={<Users />} />
+            <Route path="roles" element={<Roles />} />
+            <Route path="courses" element={<Courses />} />
+            <Route path="lessons" element={<Lessons />} />
+            <Route path="payments" element={<Payments />} />
+            <Route path="analytics" element={<Analytics />} />
+            <Route path="settings" element={<Settings />} />
+          </Route>
+        </Routes>
+      </AuthProvider>
     </Router>
   )
 }

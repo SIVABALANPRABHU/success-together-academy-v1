@@ -1,11 +1,14 @@
 import React, { useState } from 'react';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 import TopNavBar from '../components/common/TopNavBar/TopNavBar';
 import Sidebar from '../components/common/Sidebar/Sidebar';
 import './AdminLayout.css';
 
 const AdminLayout = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
 
   const sidebarItems = [
     {
@@ -51,21 +54,21 @@ const AdminLayout = () => {
   ];
 
   const handleLogout = () => {
-    // Handle logout logic here
-    console.log('Logout clicked');
+    logout();
+    navigate('/');
   };
 
-  const user = {
-    name: 'Admin User',
-    email: 'admin@example.com',
-    avatar: null, // You can add avatar URL here
+  const userData = {
+    name: user?.name || 'User',
+    email: user?.email || '',
+    avatar: user?.thumbnail || null,
   };
 
   return (
     <div className="admin-layout">
       <TopNavBar
         logoText="Success Together Academy"
-        user={user}
+        user={userData}
         onLogout={handleLogout}
         notifications={[]}
       />
