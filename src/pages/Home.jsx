@@ -4,6 +4,10 @@ import '../styles/Home.css'
 const Home = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
 
+  const closeMenu = () => {
+    setIsMenuOpen(false)
+  }
+
   return (
     <div className="home-container">
       {/* Navigation */}
@@ -13,14 +17,14 @@ const Home = () => {
             <h1>Success Together Academy</h1>
           </div>
           <div className={`nav-menu ${isMenuOpen ? 'active' : ''}`}>
-            <a href="#home" className="nav-link">Home</a>
-            <a href="#courses" className="nav-link">Courses</a>
-            <a href="#about" className="nav-link">About</a>
-            <a href="#contact" className="nav-link">Contact</a>
-            <button className="nav-button">Login</button>
-            <button className="nav-button primary">Sign Up</button>
+            <a href="#home" className="nav-link" onClick={closeMenu}>Home</a>
+            <a href="#courses" className="nav-link" onClick={closeMenu}>Courses</a>
+            <a href="#about" className="nav-link" onClick={closeMenu}>About</a>
+            <a href="#contact" className="nav-link" onClick={closeMenu}>Contact</a>
+            <button className="nav-button" onClick={closeMenu}>Login</button>
+            <button className="nav-button primary" onClick={closeMenu}>Sign Up</button>
           </div>
-          <div className="nav-toggle" onClick={() => setIsMenuOpen(!isMenuOpen)}>
+          <div className={`nav-toggle ${isMenuOpen ? 'active' : ''}`} onClick={() => setIsMenuOpen(!isMenuOpen)}>
             <span></span>
             <span></span>
             <span></span>
