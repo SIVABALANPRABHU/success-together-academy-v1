@@ -24,19 +24,19 @@ class Role {
 
   // Create new role
   static async create(roleData) {
-    const { name, description, can_self_register = false } = roleData;
+    const { name, description, can_self_register = false, home_page } = roleData;
     const query = `
-      INSERT INTO roles (name, description, can_self_register, created_at, updated_at)
-      VALUES ($1, $2, $3, NOW(), NOW())
+      INSERT INTO roles (name, description, can_self_register, home_page, created_at, updated_at)
+      VALUES ($1, $2, $3, $4, NOW(), NOW())
       RETURNING *
     `;
-    const result = await pool.query(query, [name, description || null, can_self_register]);
+    const result = await pool.query(query, [name, description || null, can_self_register, home_page || null]);
     return result.rows[0];
   }
 
   // Update role
   static async update(id, roleData) {
-    const { name, description, can_self_register } = roleData;
+    const { name, description, can_self_register, home_page } = roleData;
     const updates = [];
     const params = [];
     let paramCount = 1;
@@ -56,6 +56,12 @@ class Role {
     if (can_self_register !== undefined) {
       updates.push(`can_self_register = $${paramCount}`);
       params.push(can_self_register);
+      paramCount++;
+    }
+
+    if (home_page !== undefined) {
+      updates.push(`home_page = $${paramCount}`);
+      params.push(home_page || null);
       paramCount++;
     }
 

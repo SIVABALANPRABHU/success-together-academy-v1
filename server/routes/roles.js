@@ -52,7 +52,7 @@ router.get('/:id', async (req, res) => {
 // POST /api/roles - Create new role
 router.post('/', async (req, res) => {
   try {
-    const { name, description, can_self_register } = req.body;
+    const { name, description, can_self_register, home_page } = req.body;
 
     // Validation
     if (!name) {
@@ -75,6 +75,7 @@ router.post('/', async (req, res) => {
       name,
       description,
       can_self_register: can_self_register || false,
+      home_page,
     });
 
     res.status(201).json({
@@ -96,7 +97,7 @@ router.post('/', async (req, res) => {
 router.put('/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, description, can_self_register } = req.body;
+    const { name, description, can_self_register, home_page } = req.body;
 
     // Check if role exists
     const existingRole = await Role.findById(id);
@@ -122,6 +123,7 @@ router.put('/:id', async (req, res) => {
       name,
       description,
       can_self_register,
+      home_page,
     });
 
     res.json({

@@ -98,13 +98,25 @@ router.post('/login', async (req, res) => {
       });
     }
 
+    // Get role information including home_page
+    let redirectUrl = '/';
+    if (user.role_id) {
+      const role = await Role.findById(user.role_id);
+      if (role && role.home_page) {
+        redirectUrl = role.home_page;
+      }
+    }
+
     // Remove password from response
     const { password: _, ...userWithoutPassword } = user;
 
     res.json({
       success: true,
       message: 'Login successful',
-      data: userWithoutPassword,
+      data: {
+        ...userWithoutPassword,
+        redirect_url: redirectUrl,
+      },
     });
   } catch (error) {
     console.error('Error logging in:', error);

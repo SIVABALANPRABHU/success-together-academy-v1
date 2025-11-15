@@ -17,6 +17,7 @@ const Roles = () => {
     name: '',
     description: '',
     can_self_register: false,
+    home_page: '',
   });
   const [error, setError] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -106,6 +107,7 @@ const Roles = () => {
       name: role.name,
       description: role.description || '',
       can_self_register: role.can_self_register || false,
+      home_page: role.home_page || '',
     });
     setIsModalOpen(true);
   };
@@ -115,6 +117,7 @@ const Roles = () => {
       name: '',
       description: '',
       can_self_register: false,
+      home_page: '',
     });
     setSelectedRole(null);
     setError(null);
@@ -155,6 +158,11 @@ const Roles = () => {
           {value ? 'Yes' : 'No'}
         </span>
       ),
+    },
+    {
+      key: 'home_page',
+      title: 'Home Page',
+      render: (value) => value || <span style={{ color: '#999' }}>Not set</span>,
     },
     {
       key: 'created_at',
@@ -274,6 +282,16 @@ const Roles = () => {
               If enabled, users can register themselves with this role
             </p>
           </div>
+          <Input
+            label="Home Page / Redirect URL"
+            placeholder="e.g., /admin, /student/dashboard, /instructor/dashboard"
+            value={formData.home_page}
+            onChange={(e) => setFormData({ ...formData, home_page: e.target.value })}
+            fullWidth
+          />
+          <p className="form-helper-text" style={{ marginTop: '-10px', marginBottom: '20px' }}>
+            URL to redirect users with this role after login (e.g., /admin, /student/dashboard)
+          </p>
         </div>
       </Modal>
     </div>

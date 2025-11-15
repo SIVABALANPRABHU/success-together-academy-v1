@@ -10,6 +10,7 @@ const createRolesTable = `
     name VARCHAR(100) UNIQUE NOT NULL,
     description TEXT,
     can_self_register BOOLEAN DEFAULT false,
+    home_page VARCHAR(500),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
   );
@@ -24,6 +25,17 @@ const createRolesTable = `
       WHERE table_name = 'roles' AND column_name = 'can_self_register'
     ) THEN
       ALTER TABLE roles ADD COLUMN can_self_register BOOLEAN DEFAULT false;
+    END IF;
+  END $$;
+  
+  -- Add home_page column if table already exists
+  DO $$ 
+  BEGIN
+    IF NOT EXISTS (
+      SELECT 1 FROM information_schema.columns 
+      WHERE table_name = 'roles' AND column_name = 'home_page'
+    ) THEN
+      ALTER TABLE roles ADD COLUMN home_page VARCHAR(500);
     END IF;
   END $$;
 `;
@@ -106,13 +118,14 @@ const createUsersTable = async () => {
 };
 
 const insertRolesData = `
-  INSERT INTO roles (name, description, can_self_register) VALUES
-    ('Student', 'Student role for learning', true),
-    ('Instructor', 'Instructor role for teaching', false),
-    ('Admin', 'Administrator role for system management', false)
+  INSERT INTO roles (name, description, can_self_register, home_page) VALUES
+    ('Student', 'Student role for learning', true, '/student/dashboard'),
+    ('Instructor', 'Instructor role for teaching', false, '/instructor/dashboard'),
+    ('Admin', 'Administrator role for system management', false, '/admin')
   ON CONFLICT (name) DO UPDATE SET 
     can_self_register = EXCLUDED.can_self_register,
-    description = EXCLUDED.description;
+    description = EXCLUDED.description,
+    home_page = EXCLUDED.home_page;
 `;
 
 const insertSampleData = async () => {
