@@ -107,6 +107,77 @@ class ApiService {
       body: JSON.stringify(credentials),
     });
   }
+
+  // Features API methods
+  async getFeatures() {
+    return this.request('/features');
+  }
+
+  async getFeatureById(id) {
+    return this.request(`/features/${id}`);
+  }
+
+  async createFeature(featureData) {
+    return this.request('/features', {
+      method: 'POST',
+      body: JSON.stringify(featureData),
+    });
+  }
+
+  async updateFeature(id, featureData) {
+    return this.request(`/features/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(featureData),
+    });
+  }
+
+  async deleteFeature(id) {
+    return this.request(`/features/${id}`, {
+      method: 'DELETE',
+    });
+  }
+
+  // Permissions API methods
+  async getPermissions(filters = {}) {
+    const params = new URLSearchParams();
+    if (filters.role_id) params.append('role_id', filters.role_id);
+    if (filters.feature_id) params.append('feature_id', filters.feature_id);
+
+    const queryString = params.toString();
+    const endpoint = `/permissions${queryString ? `?${queryString}` : ''}`;
+    return this.request(endpoint);
+  }
+
+  async getPermissionById(id) {
+    return this.request(`/permissions/${id}`);
+  }
+
+  async createPermission(permissionData) {
+    return this.request('/permissions', {
+      method: 'POST',
+      body: JSON.stringify(permissionData),
+    });
+  }
+
+  async updatePermission(id, permissionData) {
+    return this.request(`/permissions/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(permissionData),
+    });
+  }
+
+  async updatePermissionByFeatureAndRole(featureId, roleId, permissionData) {
+    return this.request(`/permissions/feature/${featureId}/role/${roleId}`, {
+      method: 'PUT',
+      body: JSON.stringify(permissionData),
+    });
+  }
+
+  async deletePermission(id) {
+    return this.request(`/permissions/${id}`, {
+      method: 'DELETE',
+    });
+  }
 }
 
 export default new ApiService();

@@ -40,6 +40,40 @@ const createRolesTable = `
   END $$;
 `;
 
+const createFeaturesTable = `
+  CREATE TABLE IF NOT EXISTS features (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100) UNIQUE NOT NULL,
+    icon VARCHAR(100),
+    path VARCHAR(500),
+    description TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  );
+
+  CREATE INDEX IF NOT EXISTS idx_features_name ON features(name);
+  CREATE INDEX IF NOT EXISTS idx_features_path ON features(path);
+`;
+
+const createPermissionsTable = `
+  CREATE TABLE IF NOT EXISTS permissions (
+    id SERIAL PRIMARY KEY,
+    feature_id INTEGER REFERENCES features(id) ON DELETE CASCADE,
+    role_id INTEGER REFERENCES roles(id) ON DELETE CASCADE,
+    can_view BOOLEAN DEFAULT false,
+    can_view_detail BOOLEAN DEFAULT false,
+    can_add BOOLEAN DEFAULT false,
+    can_edit BOOLEAN DEFAULT false,
+    can_delete BOOLEAN DEFAULT false,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(feature_id, role_id)
+  );
+
+  CREATE INDEX IF NOT EXISTS idx_permissions_feature_id ON permissions(feature_id);
+  CREATE INDEX IF NOT EXISTS idx_permissions_role_id ON permissions(role_id);
+`;
+
 const createUsersTable = async () => {
   // Check if users table exists
   const tableExists = await pool.query(`
@@ -187,6 +221,110 @@ const insertSampleData = async () => {
   console.log('Password: admin@123');
 };
 
+const insertFeaturesData = async () => {
+  const features = [
+    { name: 'Dashboard', icon: '📊', path: '/admin', description: 'Admin Dashboard' },
+    { name: 'Users', icon: '👥', path: '/admin/users', description: 'User Management' },
+    { name: 'Roles', icon: '🎭', path: '/admin/roles', description: 'Role Management' },
+    { name: 'Features', icon: '⚙️', path: '/admin/features', description: 'Feature Management' },
+    { name: 'Permissions', icon: '🔐', path: '/admin/permissions', description: 'Permission Management' },
+    { name: 'Courses', icon: '📚', path: '/admin/courses', description: 'Course Management' },
+    { name: 'Lessons', icon: '📝', path: '/admin/lessons', description: 'Lesson Management' },
+    { name: 'Payments', icon: '💳', path: '/admin/payments', description: 'Payment Management' },
+    { name: 'Analytics', icon: '📈', path: '/admin/analytics', description: 'Analytics Dashboard' },
+    { name: 'Settings', icon: '⚙️', path: '/admin/settings', description: 'System Settings' },
+    { name: 'My Courses', icon: '📖', path: '/student/courses', description: 'Student Courses' },
+    { name: 'My Profile', icon: '👤', path: '/student/profile', description: 'Student Profile' },
+  ];
+
+  for (const feature of features) {
+    await pool.query(
+      `INSERT INTO features (name, icon, path, description) 
+       VALUES ($1, $2, $3, $4)
+       ON CONFLICT (name) DO UPDATE SET 
+         icon = EXCLUDED.icon,
+         path = EXCLUDED.path,
+         description = EXCLUDED.description`,
+      [feature.name, feature.icon, feature.path, feature.description]
+    );
+  }
+};
+
+const insertPermissionsData = async () => {
+  // Get role IDs
+  const studentRole = await pool.query("SELECT id FROM roles WHERE name = 'Student' LIMIT 1");
+  const superAdminRole = await pool.query("SELECT id FROM roles WHERE name = 'SuperAdmin' LIMIT 1");
+  
+  const studentRoleId = studentRole.rows[0]?.id;
+  const superAdminRoleId = superAdminRole.rows[0]?.id;
+
+  if (!studentRoleId || !superAdminRoleId) {
+    console.log('Roles not found, skipping permissions insertion');
+    return;
+  }
+
+  // Get feature IDs
+  const features = await pool.query('SELECT id, name FROM features');
+  const featureMap = {};
+  features.rows.forEach(f => {
+    featureMap[f.name] = f.id;
+  });
+
+  // SuperAdmin permissions - Full access to all admin features
+  const superAdminFeatures = [
+    'Dashboard', 'Users', 'Roles', 'Features', 'Permissions', 
+    'Courses', 'Lessons', 'Payments', 'Analytics', 'Settings'
+  ];
+
+  for (const featureName of superAdminFeatures) {
+    const featureId = featureMap[featureName];
+    if (featureId) {
+      await pool.query(
+        `INSERT INTO permissions (feature_id, role_id, can_view, can_view_detail, can_add, can_edit, can_delete)
+         VALUES ($1, $2, true, true, true, true, true)
+         ON CONFLICT (feature_id, role_id) DO UPDATE SET
+           can_view = true,
+           can_view_detail = true,
+           can_add = true,
+           can_edit = true,
+           can_delete = true`,
+        [featureId, superAdminRoleId]
+      );
+    }
+  }
+
+  // Student permissions - Limited access
+  const studentFeatures = [
+    { name: 'My Courses', view: true, view_detail: true, add: false, edit: false, delete: false },
+    { name: 'My Profile', view: true, view_detail: true, add: false, edit: true, delete: false },
+  ];
+
+  for (const feature of studentFeatures) {
+    const featureId = featureMap[feature.name];
+    if (featureId) {
+      await pool.query(
+        `INSERT INTO permissions (feature_id, role_id, can_view, can_view_detail, can_add, can_edit, can_delete)
+         VALUES ($1, $2, $3, $4, $5, $6, $7)
+         ON CONFLICT (feature_id, role_id) DO UPDATE SET
+           can_view = EXCLUDED.can_view,
+           can_view_detail = EXCLUDED.can_view_detail,
+           can_add = EXCLUDED.can_add,
+           can_edit = EXCLUDED.can_edit,
+           can_delete = EXCLUDED.can_delete`,
+        [
+          featureId, 
+          studentRoleId, 
+          feature.view, 
+          feature.view_detail, 
+          feature.add, 
+          feature.edit, 
+          feature.delete
+        ]
+      );
+    }
+  }
+};
+
 async function waitForDatabase(maxRetries = 10, delay = 2000) {
   for (let i = 0; i < maxRetries; i++) {
     try {
@@ -222,6 +360,22 @@ async function migrate() {
     // Create users table
     await createUsersTable();
     console.log('Users table created');
+
+    // Create features table
+    await pool.query(createFeaturesTable);
+    console.log('Features table created');
+
+    // Create permissions table
+    await pool.query(createPermissionsTable);
+    console.log('Permissions table created');
+
+    // Insert features data
+    await insertFeaturesData();
+    console.log('Features data inserted');
+
+    // Insert permissions data
+    await insertPermissionsData();
+    console.log('Permissions data inserted');
 
     // Insert sample data
     await insertSampleData();

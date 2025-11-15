@@ -8,6 +8,8 @@ import ProtectedRoute from './components/common/ProtectedRoute/ProtectedRoute'
 import Dashboard from './pages/admin/Dashboard'
 import Users from './pages/admin/Users'
 import Roles from './pages/admin/Roles'
+import Features from './pages/admin/Features'
+import Permissions from './pages/admin/Permissions'
 import Courses from './pages/admin/Courses'
 import Lessons from './pages/admin/Lessons'
 import Payments from './pages/admin/Payments'
@@ -34,6 +36,8 @@ function App() {
             <Route index element={<Dashboard />} />
             <Route path="users" element={<Users />} />
             <Route path="roles" element={<Roles />} />
+            <Route path="features" element={<Features />} />
+            <Route path="permissions" element={<Permissions />} />
             <Route path="courses" element={<Courses />} />
             <Route path="lessons" element={<Lessons />} />
             <Route path="payments" element={<Payments />} />

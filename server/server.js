@@ -4,6 +4,8 @@ import dotenv from 'dotenv';
 import userRoutes from './routes/users.js';
 import authRoutes from './routes/auth.js';
 import roleRoutes from './routes/roles.js';
+import featureRoutes from './routes/features.js';
+import permissionRoutes from './routes/permissions.js';
 import pool from './config/database.js';
 
 dotenv.config();
@@ -41,6 +43,8 @@ app.get('/health', async (req, res) => {
 app.use('/api/users', userRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/roles', roleRoutes);
+app.use('/api/features', featureRoutes);
+app.use('/api/permissions', permissionRoutes);
 
 // 404 handler
 app.use((req, res) => {

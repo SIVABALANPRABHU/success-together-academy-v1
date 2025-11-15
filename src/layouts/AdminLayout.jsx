@@ -1,57 +1,80 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { usePermissions } from '../hooks/usePermissions';
+import apiService from '../services/api';
 import TopNavBar from '../components/common/TopNavBar/TopNavBar';
 import Sidebar from '../components/common/Sidebar/Sidebar';
 import './AdminLayout.css';
 
 const AdminLayout = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [features, setFeatures] = useState([]);
+  const [featuresLoading, setFeaturesLoading] = useState(true);
   const { user, logout } = useAuth();
+  const { permissions, loading: permissionsLoading } = usePermissions();
   const navigate = useNavigate();
 
-  const sidebarItems = [
-    {
-      icon: '📊',
-      label: 'Dashboard',
-      path: '/admin',
-    },
-    {
-      icon: '👥',
-      label: 'Users',
-      path: '/admin/users',
-    },
-    {
-      icon: '🎭',
-      label: 'Roles',
-      path: '/admin/roles',
-    },
-    {
-      icon: '📚',
-      label: 'Courses',
-      path: '/admin/courses',
-    },
-    {
-      icon: '📝',
-      label: 'Lessons',
-      path: '/admin/lessons',
-    },
-    {
-      icon: '💳',
-      label: 'Payments',
-      path: '/admin/payments',
-    },
-    {
-      icon: '📈',
-      label: 'Analytics',
-      path: '/admin/analytics',
-    },
-    {
-      icon: '⚙️',
-      label: 'Settings',
-      path: '/admin/settings',
-    },
-  ];
+  // Fetch features from database
+  useEffect(() => {
+    fetchFeatures();
+    
+    // Listen for feature updates
+    const handleFeaturesUpdate = () => {
+      fetchFeatures();
+    };
+    
+    window.addEventListener('featuresUpdated', handleFeaturesUpdate);
+    
+    // Refresh features every 30 seconds to catch database changes
+    const interval = setInterval(fetchFeatures, 30000);
+    
+    return () => {
+      window.removeEventListener('featuresUpdated', handleFeaturesUpdate);
+      clearInterval(interval);
+    };
+  }, []);
+
+  const fetchFeatures = async () => {
+    try {
+      setFeaturesLoading(true);
+      const response = await apiService.getFeatures();
+      setFeatures(response.data || []);
+    } catch (error) {
+      console.error('Error fetching features:', error);
+      setFeatures([]);
+    } finally {
+      setFeaturesLoading(false);
+    }
+  };
+
+  // Get sidebar items based on features and permissions from database
+  const sidebarItems = useMemo(() => {
+    if (featuresLoading || permissionsLoading || !features.length || !permissions.length) {
+      return [];
+    }
+
+    // Build sidebar items from features database
+    return features
+      .filter(feature => {
+        // Only include features that have a path
+        if (!feature.path) return false;
+        
+        // Check if user has view permission for this feature
+        const permission = permissions.find(p => p.feature_path === feature.path);
+        return permission && permission.can_view;
+      })
+      .map(feature => ({
+        icon: feature.icon || '📄', // Use icon from database, fallback to default
+        label: feature.name,
+        path: feature.path,
+        featurePath: feature.path,
+      }))
+      .sort((a, b) => {
+        // Sort by feature name alphabetically
+        return a.label.localeCompare(b.label);
+      });
+  }, [features, permissions, featuresLoading, permissionsLoading]);
 
   const handleLogout = () => {
     logout();
