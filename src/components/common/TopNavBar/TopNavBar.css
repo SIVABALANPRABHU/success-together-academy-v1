@@ -1,0 +1,225 @@
+.top-navbar {
+  background-color: var(--white);
+  box-shadow: var(--shadow);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  height: 64px;
+}
+
+.top-navbar-container {
+  max-width: 100%;
+  height: 100%;
+  padding: 0 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.top-navbar-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.top-navbar-logo {
+  height: 40px;
+  width: auto;
+}
+
+.top-navbar-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-dark);
+  margin: 0;
+}
+
+.top-navbar-right {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.top-navbar-menu {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.top-navbar-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  color: var(--text-dark);
+  text-decoration: none;
+  border-radius: 0.5rem;
+  transition: all 0.2s ease;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.top-navbar-menu-item:hover {
+  background-color: var(--bg-light);
+  color: var(--primary-color);
+}
+
+.top-navbar-icon {
+  font-size: 1.25rem;
+}
+
+.top-navbar-notifications {
+  position: relative;
+}
+
+.top-navbar-notification-btn {
+  position: relative;
+  background: none;
+  border: none;
+  padding: 0.5rem;
+  cursor: pointer;
+  border-radius: 0.5rem;
+  transition: background-color 0.2s ease;
+}
+
+.top-navbar-notification-btn:hover {
+  background-color: var(--bg-light);
+}
+
+.top-navbar-badge {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background-color: #ef4444;
+  color: var(--white);
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.125rem 0.375rem;
+  border-radius: 10px;
+  min-width: 18px;
+  text-align: center;
+}
+
+.top-navbar-notification-dropdown {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  right: 0;
+  background-color: var(--white);
+  border-radius: 0.75rem;
+  box-shadow: var(--shadow-lg);
+  min-width: 320px;
+  max-height: 400px;
+  overflow-y: auto;
+  border: 1px solid var(--border-color);
+}
+
+.top-navbar-notification-item {
+  padding: 1rem;
+  border-bottom: 1px solid var(--border-color);
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.top-navbar-notification-item:hover {
+  background-color: var(--bg-light);
+}
+
+.top-navbar-notification-item--unread {
+  background-color: rgba(99, 102, 241, 0.05);
+}
+
+.top-navbar-notification-title {
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: var(--text-dark);
+  margin: 0 0 0.25rem 0;
+}
+
+.top-navbar-notification-message {
+  font-size: 0.875rem;
+  color: var(--text-light);
+  margin: 0 0 0.5rem 0;
+}
+
+.top-navbar-notification-time {
+  font-size: 0.75rem;
+  color: var(--text-light);
+}
+
+.top-navbar-user {
+  position: relative;
+}
+
+.top-navbar-user-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: none;
+  border: none;
+  padding: 0.5rem;
+  cursor: pointer;
+  border-radius: 0.5rem;
+  transition: background-color 0.2s ease;
+}
+
+.top-navbar-user-btn:hover {
+  background-color: var(--bg-light);
+}
+
+.top-navbar-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.top-navbar-user-name {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-dark);
+}
+
+.top-navbar-user-arrow {
+  font-size: 0.75rem;
+  color: var(--text-light);
+}
+
+.top-navbar-user-menu {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  right: 0;
+  background-color: var(--white);
+  border-radius: 0.75rem;
+  box-shadow: var(--shadow-lg);
+  min-width: 200px;
+  border: 1px solid var(--border-color);
+  overflow: hidden;
+}
+
+.top-navbar-user-info {
+  padding: 1rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.top-navbar-user-email {
+  font-size: 0.875rem;
+  color: var(--text-light);
+  margin: 0;
+}
+
+.top-navbar-user-menu-item {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: none;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  color: var(--text-dark);
+  font-size: 0.875rem;
+  transition: background-color 0.2s ease;
+}
+
+.top-navbar-user-menu-item:hover {
+  background-color: var(--bg-light);
+}
+

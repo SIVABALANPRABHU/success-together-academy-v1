@@ -1,0 +1,19 @@
+.admin-lessons {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.admin-lessons-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 2rem;
+}
+
+@media (max-width: 768px) {
+  .admin-lessons-header {
+    flex-direction: column;
+    gap: 1rem;
+  }
+}
+

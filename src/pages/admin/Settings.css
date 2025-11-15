@@ -1,0 +1,27 @@
+.admin-settings {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.admin-settings-header {
+  margin-bottom: 2rem;
+}
+
+.admin-settings-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 1.5rem;
+}
+
+.settings-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+@media (max-width: 768px) {
+  .admin-settings-grid {
+    grid-template-columns: 1fr;
+  }
+}
+

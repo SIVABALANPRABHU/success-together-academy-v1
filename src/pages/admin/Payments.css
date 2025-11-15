@@ -1,0 +1,27 @@
+.admin-payments {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.admin-payments-header {
+  margin-bottom: 2rem;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.status-badge--completed {
+  background-color: rgba(16, 185, 129, 0.1);
+  color: #10b981;
+}
+
+.status-badge--pending {
+  background-color: rgba(251, 191, 36, 0.1);
+  color: #f59e0b;
+}
+
