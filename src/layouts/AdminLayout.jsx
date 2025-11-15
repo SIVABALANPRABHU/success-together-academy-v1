@@ -71,7 +71,9 @@ const AdminLayout = () => {
         featurePath: feature.path,
       }))
       .sort((a, b) => {
-        // Sort by feature name alphabetically
+        // Dashboard always first, then sort others alphabetically
+        if (a.path === '/admin') return -1;
+        if (b.path === '/admin') return 1;
         return a.label.localeCompare(b.label);
       });
   }, [features, permissions, featuresLoading, permissionsLoading]);

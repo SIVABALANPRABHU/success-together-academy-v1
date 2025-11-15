@@ -1,5 +1,5 @@
 import React from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useLocation } from 'react-router-dom';
 import './Sidebar.css';
 
 const Sidebar = ({
@@ -8,6 +8,8 @@ const Sidebar = ({
   onToggleCollapse,
   className = '',
 }) => {
+  const location = useLocation();
+  
   return (
     <aside className={`sidebar ${collapsed ? 'sidebar--collapsed' : ''} ${className}`}>
       <div className="sidebar-content">
@@ -45,13 +47,21 @@ const Sidebar = ({
               );
             }
 
+            // Check if this is Dashboard - should only be active when exactly at /admin
+            const isDashboard = item.path === '/admin';
+            
             return (
               <NavLink
                 key={index}
                 to={item.path}
-                className={({ isActive }) =>
-                  `sidebar-item ${isActive ? 'sidebar-item--active' : ''}`
-                }
+                end={true}
+                className={({ isActive }) => {
+                  // Dashboard should only be active when exactly at /admin, not on sub-routes
+                  const active = isDashboard 
+                    ? location.pathname === '/admin'
+                    : isActive;
+                  return `sidebar-item ${active ? 'sidebar-item--active' : ''}`;
+                }}
                 title={collapsed ? item.label : ''}
               >
                 {item.icon && <span className="sidebar-icon">{item.icon}</span>}

@@ -7,7 +7,7 @@
   transition: width 0.3s ease;
   position: relative;
   height: 100vh;
-  overflow-y: auto;
+  overflow: hidden;
 }
 
 .sidebar--collapsed {
@@ -17,6 +17,10 @@
 .sidebar-content {
   flex: 1;
   padding: 1rem 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  min-height: 0;
+  padding-bottom: 4rem;
 }
 
 .sidebar-nav {
@@ -123,6 +127,8 @@
   color: var(--text-dark);
   transition: all 0.2s ease;
   box-shadow: var(--shadow);
+  z-index: 10;
+  flex-shrink: 0;
 }
 
 .sidebar-toggle:hover {
