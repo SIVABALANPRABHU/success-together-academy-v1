@@ -1,17 +1,56 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import '../styles/Home.css'
 
 const Home = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [scrolled, setScrolled] = useState(false)
+  const featuresRef = useRef(null)
+  const ctaRef = useRef(null)
 
   const closeMenu = () => {
     setIsMenuOpen(false)
   }
 
+  useEffect(() => {
+    const handleScroll = () => {
+      const isScrolled = window.scrollY > 50
+      setScrolled(isScrolled)
+    }
+
+    window.addEventListener('scroll', handleScroll)
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
+
+  useEffect(() => {
+    const observerOptions = {
+      threshold: 0.1,
+      rootMargin: '0px 0px -50px 0px'
+    }
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('in-view')
+        }
+      })
+    }, observerOptions)
+
+    const featureCards = document.querySelectorAll('.feature-card')
+    featureCards.forEach((card) => observer.observe(card))
+
+    const ctaElements = document.querySelectorAll('.cta-section .fade-in-up')
+    ctaElements.forEach((el) => observer.observe(el))
+
+    return () => {
+      featureCards.forEach((card) => observer.unobserve(card))
+      ctaElements.forEach((el) => observer.unobserve(el))
+    }
+  }, [])
+
   return (
     <div className="home-container">
       {/* Navigation */}
-      <nav className="navbar">
+      <nav className={`navbar ${scrolled ? 'scrolled' : ''}`}>
         <div className="nav-container">
           <div className="nav-logo">
             <h1>Success Together Academy</h1>
@@ -53,9 +92,9 @@ const Home = () => {
       {/* Features Section */}
       <section className="features-section">
         <div className="container">
-          <h2 className="section-title">Why Choose Us?</h2>
+          <h2 className="section-title fade-in-up">Why Choose Us?</h2>
           <div className="features-grid">
-            <div className="feature-card">
+            <div className="feature-card fade-in-up" style={{ animationDelay: '0.1s' }}>
               <div className="feature-icon">
                 <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M4 19.5C4 18.837 4.263 18.201 4.732 17.732C5.201 17.263 5.837 17 6.5 17H17.5C18.163 17 18.799 17.263 19.268 17.732C19.737 18.201 20 18.837 20 19.5V21H4V19.5Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
@@ -65,7 +104,7 @@ const Home = () => {
               <h3>Comprehensive Courses</h3>
               <p>Access a wide range of courses designed by industry experts</p>
             </div>
-            <div className="feature-card">
+            <div className="feature-card fade-in-up" style={{ animationDelay: '0.2s' }}>
               <div className="feature-icon">
                 <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2"/>
@@ -75,7 +114,7 @@ const Home = () => {
               <h3>Learn at Your Pace</h3>
               <p>Study whenever and wherever you want with flexible scheduling</p>
             </div>
-            <div className="feature-card">
+            <div className="feature-card fade-in-up" style={{ animationDelay: '0.3s' }}>
               <div className="feature-icon">
                 <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M6 9L12 3L18 9M12 3V21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
@@ -85,7 +124,7 @@ const Home = () => {
               <h3>Certified Programs</h3>
               <p>Earn recognized certificates upon course completion</p>
             </div>
-            <div className="feature-card">
+            <div className="feature-card fade-in-up" style={{ animationDelay: '0.4s' }}>
               <div className="feature-icon">
                 <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M17 21V19C17 17.939 16.579 16.92 15.829 16.171C15.08 15.421 14.061 15 13 15H5C3.939 15 2.92 15.421 2.171 16.171C1.421 16.92 1 17.939 1 19V21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
@@ -104,9 +143,9 @@ const Home = () => {
       {/* CTA Section */}
       <section className="cta-section">
         <div className="container">
-          <h2>Ready to Start Learning?</h2>
-          <p>Join thousands of students already on their learning journey</p>
-          <button className="btn btn-primary large">Get Started Now</button>
+          <h2 className="fade-in-up">Ready to Start Learning?</h2>
+          <p className="fade-in-up" style={{ animationDelay: '0.2s' }}>Join thousands of students already on their learning journey</p>
+          <button className="btn btn-primary large pulse-animation">Get Started Now</button>
         </div>
       </section>
 
