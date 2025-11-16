@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Outlet, useNavigate, Link } from 'react-router-dom';
+import { Outlet, useNavigate, NavLink, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import './StudentLayout.css';
 
@@ -7,6 +7,7 @@ const StudentLayout = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const handleLogout = () => {
     logout();
@@ -44,16 +45,29 @@ const StudentLayout = () => {
       <div className="student-layout-content">
         <aside className={`student-sidebar ${sidebarCollapsed ? 'collapsed' : ''}`}>
           <nav className="student-sidebar-nav">
-            {sidebarItems.map((item) => (
-              <Link
-                key={item.path}
-                to={item.path}
-                className="student-sidebar-item"
-              >
-                <span className="sidebar-icon">{item.icon}</span>
-                {!sidebarCollapsed && <span className="sidebar-label">{item.label}</span>}
-              </Link>
-            ))}
+            {sidebarItems.map((item) => {
+              // Check if this is Dashboard - should only be active when exactly at /student/dashboard
+              const isDashboard = item.path === '/student/dashboard';
+              
+              return (
+                <NavLink
+                  key={item.path}
+                  to={item.path}
+                  end={isDashboard}
+                  className={({ isActive }) => {
+                    // Dashboard should only be active when exactly at /student/dashboard, not on sub-routes
+                    const active = isDashboard 
+                      ? location.pathname === '/student/dashboard'
+                      : isActive;
+                    return `student-sidebar-item ${active ? 'active' : ''}`;
+                  }}
+                  title={sidebarCollapsed ? item.label : ''}
+                >
+                  <span className="sidebar-icon">{item.icon}</span>
+                  {!sidebarCollapsed && <span className="sidebar-label">{item.label}</span>}
+                </NavLink>
+              );
+            })}
           </nav>
         </aside>
 
