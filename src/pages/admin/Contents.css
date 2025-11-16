@@ -219,6 +219,44 @@
   color: #374151;
 }
 
+.markdown-note {
+  padding: 0.75rem;
+  background: #eff6ff;
+  border: 1px solid #93c5fd;
+  border-radius: 0.375rem;
+  margin-bottom: 1rem;
+}
+
+.markdown-note p {
+  margin: 0;
+  color: #1e40af;
+  font-size: 0.875rem;
+}
+
+.google-drive-help {
+  margin-top: 1rem;
+  padding: 1rem;
+  background: #f0fdf4;
+  border: 1px solid #86efac;
+  border-radius: 0.375rem;
+}
+
+.google-drive-help strong {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: #166534;
+}
+
+.google-drive-help ol {
+  margin: 0.5rem 0 0 1.5rem;
+  color: #166534;
+  font-size: 0.875rem;
+}
+
+.google-drive-help li {
+  margin: 0.25rem 0;
+}
+
 @media (max-width: 768px) {
   .admin-contents-header {
     flex-direction: column;

@@ -6,6 +6,7 @@ import Input from '../../components/common/Input/Input';
 import Modal from '../../components/common/Modal/Modal';
 import ContentPreview from '../../components/common/ContentPreview/ContentPreview';
 import FileUpload from '../../components/common/FileUpload/FileUpload';
+import MarkdownEditor from '../../components/common/MarkdownEditor/MarkdownEditor';
 import apiService from '../../services/api';
 import { usePermissions } from '../../hooks/usePermissions';
 import './Contents.css';
@@ -470,13 +471,21 @@ const Contents = () => {
               <select
                 className="input"
                 value={formData.content_type}
-                onChange={(e) => setFormData({ ...formData, content_type: e.target.value })}
+                onChange={(e) => {
+                  const newType = e.target.value;
+                  // Markdown is always internal
+                  if (newType === 'markdown') {
+                    setFormData({ ...formData, content_type: newType, content_source: 'internal', content_url: '' });
+                  } else {
+                    setFormData({ ...formData, content_type: newType });
+                  }
+                }}
                 disabled={isSubmitting}
                 required
               >
                 <option value="video">Video</option>
-                <option value="file">File</option>
-                <option value="markdown">Markdown</option>
+                <option value="file">File (PDF, PPT, Word)</option>
+                <option value="markdown">Markdown (Internal Only)</option>
                 <option value="image">Image</option>
               </select>
             </div>
@@ -488,16 +497,37 @@ const Contents = () => {
                 className="input"
                 value={formData.content_source}
                 onChange={(e) => setFormData({ ...formData, content_source: e.target.value })}
-                disabled={isSubmitting}
+                disabled={isSubmitting || formData.content_type === 'markdown'}
                 required
               >
                 <option value="internal">Internal</option>
                 <option value="external">External</option>
               </select>
+              {formData.content_type === 'markdown' && (
+                <span className="input-helper" style={{ color: '#6b7280', fontSize: '0.75rem', marginTop: '0.25rem', display: 'block' }}>
+                  Markdown is internal only
+                </span>
+              )}
             </div>
           </div>
           
-          {formData.content_source === 'internal' ? (
+          {formData.content_type === 'markdown' ? (
+            // Markdown is internal only
+            <div className="input-wrapper input-wrapper--full-width">
+              <label className="input-label">
+                Markdown Content <span className="input-required">*</span>
+              </label>
+              <div className="markdown-note">
+                <p>Markdown content is stored internally. Use the editor below to write your markdown.</p>
+              </div>
+              <MarkdownEditor
+                value={formData.content_url}
+                onChange={(value) => setFormData({ ...formData, content_url: value })}
+                disabled={isSubmitting}
+                height="400px"
+              />
+            </div>
+          ) : formData.content_source === 'internal' ? (
             <div className="input-wrapper input-wrapper--full-width">
               <label className="input-label">
                 Upload File <span className="input-required">*</span>
@@ -510,7 +540,15 @@ const Contents = () => {
                   setError(error || 'Failed to upload file');
                 }}
                 disabled={isSubmitting}
-                accept={formData.content_type === 'video' ? 'video/*' : formData.content_type === 'image' ? 'image/*' : '*'}
+                accept={
+                  formData.content_type === 'video' 
+                    ? 'video/*' 
+                    : formData.content_type === 'image' 
+                    ? 'image/*' 
+                    : formData.content_type === 'file'
+                    ? '.pdf,.ppt,.pptx'
+                    : '*'
+                }
               />
               {formData.content_url && (
                 <div className="uploaded-file-info">
@@ -534,6 +572,8 @@ const Contents = () => {
                     ? 'https://youtube.com/watch?v=... or https://vimeo.com/... or direct video URL'
                     : formData.content_type === 'image'
                     ? 'https://example.com/image.jpg'
+                    : formData.content_type === 'file'
+                    ? 'https://drive.google.com/file/d/FILE_ID/view or direct file URL'
                     : 'https://example.com/file.pdf'
                 }
                 value={formData.content_url}
@@ -544,12 +584,30 @@ const Contents = () => {
                 helperText={
                   formData.content_type === 'video'
                     ? 'Supports YouTube, Vimeo, or direct video URLs'
+                    : formData.content_type === 'file'
+                    ? 'For PDF/Word files, upload to Google Drive and use the shareable link. For PPT files, supports Google Drive or direct URLs.'
                     : 'External URL (e.g., https://example.com/file.pdf)'
                 }
               />
               {(formData.content_url && (formData.content_url.includes('youtube.com') || formData.content_url.includes('youtu.be') || formData.content_url.includes('vimeo.com'))) && (
                 <div className="embed-notice">
                   ✓ Embedded video URL detected. Preview will show embedded player.
+                </div>
+              )}
+              {formData.content_type === 'file' && formData.content_url && formData.content_url.includes('drive.google.com') && (
+                <div className="embed-notice">
+                  ✓ Google Drive link detected. Preview will use Google Docs Viewer.
+                </div>
+              )}
+              {formData.content_type === 'file' && (
+                <div className="google-drive-help">
+                  <strong>Google Drive Setup:</strong>
+                  <ol>
+                    <li>Upload your PDF/Word file to Google Drive</li>
+                    <li>Right-click the file → Share → Get link</li>
+                    <li>Change permission to "Anyone with the link can view"</li>
+                    <li>Copy the link and paste it above</li>
+                  </ol>
                 </div>
               )}
             </>
