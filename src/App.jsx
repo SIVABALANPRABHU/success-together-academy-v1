@@ -22,6 +22,14 @@ import Menus from './pages/admin/Menus'
 import Packages from './pages/admin/Packages'
 import Offers from './pages/admin/Offers'
 import Memberships from './pages/admin/Memberships'
+import StudentLayout from './layouts/StudentLayout'
+import StudentDashboard from './pages/student/Dashboard'
+import StudentCourses from './pages/student/Courses'
+import StudentMemberships from './pages/student/Memberships'
+import StudentProfile from './pages/student/Profile'
+import MenuDetail from './pages/student/MenuDetail'
+import CourseDetail from './pages/student/CourseDetail'
+import ChapterDetail from './pages/student/ChapterDetail'
 import './App.css'
 
 function App() {
@@ -57,6 +65,22 @@ function App() {
             <Route path="payments" element={<Payments />} />
             <Route path="analytics" element={<Analytics />} />
             <Route path="settings" element={<Settings />} />
+          </Route>
+          <Route
+            path="/student"
+            element={
+              <ProtectedRoute>
+                <StudentLayout />
+              </ProtectedRoute>
+            }
+          >
+            <Route path="dashboard" element={<StudentDashboard />} />
+            <Route path="courses" element={<StudentCourses />} />
+            <Route path="memberships" element={<StudentMemberships />} />
+            <Route path="profile" element={<StudentProfile />} />
+            <Route path="menu/:menuId" element={<MenuDetail />} />
+            <Route path="course/:courseId" element={<CourseDetail />} />
+            <Route path="chapter/:chapterId" element={<ChapterDetail />} />
           </Route>
         </Routes>
       </AuthProvider>
