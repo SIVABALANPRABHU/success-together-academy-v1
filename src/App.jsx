@@ -15,6 +15,7 @@ import Lessons from './pages/admin/Lessons'
 import Payments from './pages/admin/Payments'
 import Analytics from './pages/admin/Analytics'
 import Settings from './pages/admin/Settings'
+import Contents from './pages/admin/Contents'
 import './App.css'
 
 function App() {
@@ -38,6 +39,7 @@ function App() {
             <Route path="roles" element={<Roles />} />
             <Route path="features" element={<Features />} />
             <Route path="permissions" element={<Permissions />} />
+            <Route path="contents" element={<Contents />} />
             <Route path="courses" element={<Courses />} />
             <Route path="lessons" element={<Lessons />} />
             <Route path="payments" element={<Payments />} />

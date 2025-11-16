@@ -23,4 +23,12 @@ dist-ssr
 *.sln
 *.sw?
 
+# Uploaded files - prevent large files from being committed
+server/uploads/*
+!server/uploads/.gitkeep
+!server/uploads/README.md
+uploads/*
+!uploads/.gitkeep
+!uploads/README.md
+
 

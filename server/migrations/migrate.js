@@ -74,6 +74,51 @@ const createPermissionsTable = `
   CREATE INDEX IF NOT EXISTS idx_permissions_role_id ON permissions(role_id);
 `;
 
+const createContentsTable = async () => {
+  // Check if contents table exists
+  const tableExists = await pool.query(`
+    SELECT EXISTS (
+      SELECT FROM information_schema.tables 
+      WHERE table_schema = 'public' 
+      AND table_name = 'contents'
+    );
+  `);
+  
+  if (!tableExists.rows[0].exists) {
+    // Create contents table
+    await pool.query(`
+      CREATE TABLE contents (
+        id SERIAL PRIMARY KEY,
+        title VARCHAR(255) NOT NULL,
+        description TEXT,
+        content_type VARCHAR(50) NOT NULL CHECK (content_type IN ('video', 'file', 'markdown', 'image')),
+        content_source VARCHAR(50) NOT NULL CHECK (content_source IN ('internal', 'external')),
+        content_url TEXT NOT NULL,
+        thumbnail_url VARCHAR(500),
+        status VARCHAR(50) DEFAULT 'active' CHECK (status IN ('active', 'inactive', 'draft')),
+        metadata JSONB,
+        created_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+    
+    // Create indexes
+    await pool.query('CREATE INDEX idx_contents_content_type ON contents(content_type)');
+    await pool.query('CREATE INDEX idx_contents_content_source ON contents(content_source)');
+    await pool.query('CREATE INDEX idx_contents_status ON contents(status)');
+    await pool.query('CREATE INDEX idx_contents_created_by ON contents(created_by)');
+    await pool.query('CREATE INDEX idx_contents_title ON contents(title)');
+  } else {
+    // Table exists - ensure indexes exist
+    await pool.query('CREATE INDEX IF NOT EXISTS idx_contents_content_type ON contents(content_type)');
+    await pool.query('CREATE INDEX IF NOT EXISTS idx_contents_content_source ON contents(content_source)');
+    await pool.query('CREATE INDEX IF NOT EXISTS idx_contents_status ON contents(status)');
+    await pool.query('CREATE INDEX IF NOT EXISTS idx_contents_created_by ON contents(created_by)');
+    await pool.query('CREATE INDEX IF NOT EXISTS idx_contents_title ON contents(title)');
+  }
+};
+
 const createUsersTable = async () => {
   // Check if users table exists
   const tableExists = await pool.query(`
@@ -228,6 +273,7 @@ const insertFeaturesData = async () => {
     { name: 'Roles', icon: '🎭', path: '/admin/roles', description: 'Role Management' },
     { name: 'Features', icon: '⚙️', path: '/admin/features', description: 'Feature Management' },
     { name: 'Permissions', icon: '🔐', path: '/admin/permissions', description: 'Permission Management' },
+    { name: 'Content Management', icon: '📄', path: '/admin/contents', description: 'Content Management (Video, File, Markdown, Image)' },
     { name: 'Courses', icon: '📚', path: '/admin/courses', description: 'Course Management' },
     { name: 'Lessons', icon: '📝', path: '/admin/lessons', description: 'Lesson Management' },
     { name: 'Payments', icon: '💳', path: '/admin/payments', description: 'Payment Management' },
@@ -272,7 +318,7 @@ const insertPermissionsData = async () => {
 
   // SuperAdmin permissions - Full access to all admin features
   const superAdminFeatures = [
-    'Dashboard', 'Users', 'Roles', 'Features', 'Permissions', 
+    'Dashboard', 'Users', 'Roles', 'Features', 'Permissions', 'Content Management',
     'Courses', 'Lessons', 'Payments', 'Analytics', 'Settings'
   ];
 
@@ -368,6 +414,10 @@ async function migrate() {
     // Create permissions table
     await pool.query(createPermissionsTable);
     console.log('Permissions table created');
+
+    // Create contents table
+    await createContentsTable();
+    console.log('Contents table created');
 
     // Insert features data
     await insertFeaturesData();

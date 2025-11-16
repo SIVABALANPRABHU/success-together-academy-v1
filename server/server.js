@@ -6,6 +6,8 @@ import authRoutes from './routes/auth.js';
 import roleRoutes from './routes/roles.js';
 import featureRoutes from './routes/features.js';
 import permissionRoutes from './routes/permissions.js';
+import contentRoutes from './routes/contents.js';
+import uploadRoutes from './routes/upload.js';
 import pool from './config/database.js';
 
 dotenv.config();
@@ -20,6 +22,8 @@ app.use(cors({
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+// Serve uploaded files
+app.use('/uploads', express.static('uploads'));
 
 // Health check
 app.get('/health', async (req, res) => {
@@ -45,6 +49,8 @@ app.use('/api/auth', authRoutes);
 app.use('/api/roles', roleRoutes);
 app.use('/api/features', featureRoutes);
 app.use('/api/permissions', permissionRoutes);
+app.use('/api/contents', contentRoutes);
+app.use('/api/upload', uploadRoutes);
 
 // 404 handler
 app.use((req, res) => {

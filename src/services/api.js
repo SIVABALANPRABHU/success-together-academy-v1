@@ -178,6 +178,45 @@ class ApiService {
       method: 'DELETE',
     });
   }
+
+  // Contents API methods
+  async getContents(filters = {}) {
+    const params = new URLSearchParams();
+    if (filters.search) params.append('search', filters.search);
+    if (filters.content_type) params.append('content_type', filters.content_type);
+    if (filters.content_source) params.append('content_source', filters.content_source);
+    if (filters.status) params.append('status', filters.status);
+    if (filters.limit) params.append('limit', filters.limit);
+    if (filters.offset) params.append('offset', filters.offset);
+
+    const queryString = params.toString();
+    const endpoint = `/contents${queryString ? `?${queryString}` : ''}`;
+    return this.request(endpoint);
+  }
+
+  async getContentById(id) {
+    return this.request(`/contents/${id}`);
+  }
+
+  async createContent(contentData) {
+    return this.request('/contents', {
+      method: 'POST',
+      body: JSON.stringify(contentData),
+    });
+  }
+
+  async updateContent(id, contentData) {
+    return this.request(`/contents/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(contentData),
+    });
+  }
+
+  async deleteContent(id) {
+    return this.request(`/contents/${id}`, {
+      method: 'DELETE',
+    });
+  }
 }
 
 export default new ApiService();

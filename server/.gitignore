@@ -3,3 +3,10 @@ node_modules/
 *.log
 .DS_Store
 
+# Uploaded files - prevent large files from being committed
+# Ignore all files in uploads directory except .gitkeep and README.md
+uploads/*
+!uploads/
+!uploads/.gitkeep
+!uploads/README.md
+
