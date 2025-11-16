@@ -362,6 +362,105 @@ const createCourseManagementTables = async () => {
   }
 };
 
+const createSubscriptionManagementTables = async () => {
+  // Create packages table
+  const packagesTableExists = await pool.query(`
+    SELECT EXISTS (
+      SELECT FROM information_schema.tables 
+      WHERE table_schema = 'public' 
+      AND table_name = 'packages'
+    );
+  `);
+  
+  if (!packagesTableExists.rows[0].exists) {
+    await pool.query(`
+      CREATE TABLE packages (
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(255) NOT NULL,
+        description TEXT,
+        duration_days INTEGER NOT NULL,
+        amount DECIMAL(10, 2) NOT NULL,
+        menu_id INTEGER REFERENCES menus(id) ON DELETE SET NULL,
+        package_type VARCHAR(50) DEFAULT 'basic' CHECK (package_type IN ('free', 'basic', 'intermediate', 'advanced', 'premium')),
+        status VARCHAR(50) DEFAULT 'active' CHECK (status IN ('active', 'inactive', 'draft')),
+        created_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+    await pool.query('CREATE INDEX idx_packages_menu_id ON packages(menu_id)');
+    await pool.query('CREATE INDEX idx_packages_status ON packages(status)');
+    await pool.query('CREATE INDEX idx_packages_type ON packages(package_type)');
+  } else {
+    // Table exists - check and add missing columns
+    const columnExists = await pool.query(`
+      SELECT EXISTS (
+        SELECT FROM information_schema.columns 
+        WHERE table_schema = 'public' 
+        AND table_name = 'packages' 
+        AND column_name = 'package_type'
+      );
+    `);
+    if (!columnExists.rows[0].exists) {
+      await pool.query('ALTER TABLE packages ADD COLUMN package_type VARCHAR(50) DEFAULT \'basic\' CHECK (package_type IN (\'free\', \'basic\', \'intermediate\', \'advanced\', \'premium\'))');
+      await pool.query('CREATE INDEX IF NOT EXISTS idx_packages_type ON packages(package_type)');
+    }
+  }
+
+  // Create package_courses junction table (packages contain courses)
+  const packageCoursesExists = await pool.query(`
+    SELECT EXISTS (
+      SELECT FROM information_schema.tables 
+      WHERE table_schema = 'public' 
+      AND table_name = 'package_courses'
+    );
+  `);
+  
+  if (!packageCoursesExists.rows[0].exists) {
+    await pool.query(`
+      CREATE TABLE package_courses (
+        id SERIAL PRIMARY KEY,
+        package_id INTEGER REFERENCES packages(id) ON DELETE CASCADE,
+        course_id INTEGER REFERENCES courses(id) ON DELETE CASCADE,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(package_id, course_id)
+      );
+    `);
+    await pool.query('CREATE INDEX idx_package_courses_package ON package_courses(package_id)');
+    await pool.query('CREATE INDEX idx_package_courses_course ON package_courses(course_id)');
+  }
+
+  // Create offers table
+  const offersTableExists = await pool.query(`
+    SELECT EXISTS (
+      SELECT FROM information_schema.tables 
+      WHERE table_schema = 'public' 
+      AND table_name = 'offers'
+    );
+  `);
+  
+  if (!offersTableExists.rows[0].exists) {
+    await pool.query(`
+      CREATE TABLE offers (
+        id SERIAL PRIMARY KEY,
+        package_id INTEGER REFERENCES packages(id) ON DELETE CASCADE,
+        offer_text TEXT NOT NULL,
+        discount_percentage DECIMAL(5, 2) NOT NULL CHECK (discount_percentage >= 0 AND discount_percentage <= 100),
+        start_date TIMESTAMP NOT NULL,
+        end_date TIMESTAMP NOT NULL,
+        status VARCHAR(50) DEFAULT 'active' CHECK (status IN ('active', 'inactive', 'expired')),
+        created_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        CHECK (end_date > start_date)
+      );
+    `);
+    await pool.query('CREATE INDEX idx_offers_package_id ON offers(package_id)');
+    await pool.query('CREATE INDEX idx_offers_status ON offers(status)');
+    await pool.query('CREATE INDEX idx_offers_dates ON offers(start_date, end_date)');
+  }
+};
+
 const createUsersTable = async () => {
   // Check if users table exists
   const tableExists = await pool.query(`
@@ -521,6 +620,8 @@ const insertFeaturesData = async () => {
     { name: 'Courses', icon: '📚', path: '/admin/courses', description: 'Course Management' },
     { name: 'Chapters', icon: '📑', path: '/admin/chapters', description: 'Chapter Management' },
     { name: 'Pages', icon: '📄', path: '/admin/pages', description: 'Page Management' },
+    { name: 'Packages', icon: '📦', path: '/admin/packages', description: 'Package Management' },
+    { name: 'Offers', icon: '🎁', path: '/admin/offers', description: 'Offer Management' },
     { name: 'Lessons', icon: '📝', path: '/admin/lessons', description: 'Lesson Management' },
     { name: 'Payments', icon: '💳', path: '/admin/payments', description: 'Payment Management' },
     { name: 'Analytics', icon: '📈', path: '/admin/analytics', description: 'Analytics Dashboard' },
@@ -565,7 +666,7 @@ const insertPermissionsData = async () => {
   // SuperAdmin permissions - Full access to all admin features
   const superAdminFeatures = [
     'Dashboard', 'Users', 'Roles', 'Features', 'Permissions', 'Content Management',
-    'Menus', 'Courses', 'Chapters', 'Pages', 'Lessons', 'Payments', 'Analytics', 'Settings'
+    'Menus', 'Courses', 'Chapters', 'Pages', 'Packages', 'Offers', 'Lessons', 'Payments', 'Analytics', 'Settings'
   ];
 
   for (const featureName of superAdminFeatures) {
@@ -668,6 +769,10 @@ async function migrate() {
     // Create course management tables
     await createCourseManagementTables();
     console.log('Course management tables created');
+
+    // Create subscription management tables
+    await createSubscriptionManagementTables();
+    console.log('Subscription management tables created');
 
     // Insert features data
     await insertFeaturesData();

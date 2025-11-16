@@ -1,4 +1,4 @@
-.courses-container {
+.pages-container {
   padding: 20px;
 }
 
@@ -76,70 +76,4 @@
   justify-content: flex-end;
 }
 
-.chapter-management-container {
-  display: flex;
-  flex-direction: column;
-  gap: 30px;
-}
 
-.chapter-list-section,
-.chapter-add-section {
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
-  padding: 20px;
-}
-
-.chapter-list-section h3,
-.chapter-add-section h3 {
-  margin-top: 0;
-  margin-bottom: 15px;
-  font-size: 18px;
-  font-weight: 600;
-}
-
-.ordered-list,
-.available-items {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.ordered-item,
-.available-item {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-  padding: 12px;
-  background-color: #f9f9f9;
-  border-radius: 6px;
-  border: 1px solid #e0e0e0;
-}
-
-.order-controls {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  min-width: 50px;
-}
-
-.order-number {
-  font-weight: 600;
-  color: #666;
-  font-size: 14px;
-}
-
-.item-content {
-  flex: 1;
-}
-
-.item-content strong {
-  display: block;
-  margin-bottom: 4px;
-}
-
-.item-description {
-  margin: 0;
-  font-size: 13px;
-  color: #666;
-}

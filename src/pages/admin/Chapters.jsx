@@ -6,19 +6,19 @@ import Input from '../../components/common/Input/Input';
 import Modal from '../../components/common/Modal/Modal';
 import FileUpload from '../../components/common/FileUpload/FileUpload';
 import apiService from '../../services/api';
-import './Courses.css';
+import './Chapters.css';
 
-const Courses = () => {
-  const [courses, setCourses] = useState([]);
+const Chapters = () => {
   const [chapters, setChapters] = useState([]);
+  const [pages, setPages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isChapterModalOpen, setIsChapterModalOpen] = useState(false);
-  const [selectedCourse, setSelectedCourse] = useState(null);
-  const [selectedCourseChapters, setSelectedCourseChapters] = useState([]);
-  const [selectedChapterIds, setSelectedChapterIds] = useState([]);
+  const [isPageModalOpen, setIsPageModalOpen] = useState(false);
+  const [selectedChapter, setSelectedChapter] = useState(null);
+  const [selectedChapterPages, setSelectedChapterPages] = useState([]);
+  const [selectedPageIds, setSelectedPageIds] = useState([]);
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -30,18 +30,18 @@ const Courses = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    fetchCourses();
     fetchChapters();
+    fetchPages();
   }, [filterStatus]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      fetchCourses();
+      fetchChapters();
     }, 300);
     return () => clearTimeout(timer);
   }, [searchTerm]);
 
-  const fetchCourses = async () => {
+  const fetchChapters = async () => {
     try {
       setLoading(true);
       setError(null);
@@ -50,58 +50,35 @@ const Courses = () => {
         status: filterStatus || undefined,
         limit: 100,
       };
-      const response = await apiService.getCourses(filters);
-      setCourses(response.data || []);
+      const response = await apiService.getChapters(filters);
+      setChapters(response.data || []);
     } catch (err) {
-      setError(err.message || 'Failed to fetch courses');
-      console.error('Error fetching courses:', err);
+      setError(err.message || 'Failed to fetch chapters');
+      console.error('Error fetching chapters:', err);
     } finally {
       setLoading(false);
     }
   };
 
-  const fetchChapters = async () => {
+  const fetchPages = async () => {
     try {
-      const response = await apiService.getChapters({ limit: 1000 });
-      setChapters(response.data || []);
+      const response = await apiService.getPages({ limit: 1000 });
+      setPages(response.data || []);
     } catch (err) {
-      console.error('Error fetching chapters:', err);
+      console.error('Error fetching pages:', err);
     }
   };
 
-  const fetchCourseChapters = async (courseId) => {
+  const fetchChapterPages = async (chapterId) => {
     try {
-      const response = await apiService.getChaptersByCourse(courseId);
-      setSelectedCourseChapters(response.data || []);
+      const response = await apiService.getPagesByChapter(chapterId);
+      setSelectedChapterPages(response.data || []);
     } catch (err) {
-      console.error('Error fetching course chapters:', err);
+      console.error('Error fetching chapter pages:', err);
     }
   };
 
-  const handleCreateCourse = async () => {
-    try {
-      setIsSubmitting(true);
-      setError(null);
-
-      if (!formData.title) {
-        setError('Title is required');
-        setIsSubmitting(false);
-        return;
-      }
-
-      await apiService.createCourse(formData);
-      await fetchCourses();
-      setIsModalOpen(false);
-      resetForm();
-      alert('Course created successfully!');
-    } catch (err) {
-      setError(err.message || 'Failed to create course');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleUpdateCourse = async () => {
+  const handleCreateChapter = async () => {
     try {
       setIsSubmitting(true);
       setError(null);
@@ -112,121 +89,144 @@ const Courses = () => {
         return;
       }
 
-      await apiService.updateCourse(selectedCourse.id, formData);
-      await fetchCourses();
+      await apiService.createChapter(formData);
+      await fetchChapters();
       setIsModalOpen(false);
-      setSelectedCourse(null);
       resetForm();
-      alert('Course updated successfully!');
+      alert('Chapter created successfully!');
     } catch (err) {
-      setError(err.message || 'Failed to update course');
+      setError(err.message || 'Failed to create chapter');
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const handleDeleteCourse = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this course?')) {
+  const handleUpdateChapter = async () => {
+    try {
+      setIsSubmitting(true);
+      setError(null);
+
+      if (!formData.title) {
+        setError('Title is required');
+        setIsSubmitting(false);
+        return;
+      }
+
+      await apiService.updateChapter(selectedChapter.id, formData);
+      await fetchChapters();
+      setIsModalOpen(false);
+      setSelectedChapter(null);
+      resetForm();
+      alert('Chapter updated successfully!');
+    } catch (err) {
+      setError(err.message || 'Failed to update chapter');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleDeleteChapter = async (id) => {
+    if (!window.confirm('Are you sure you want to delete this chapter?')) {
       return;
     }
 
     try {
-      await apiService.deleteCourse(id);
-      await fetchCourses();
-      alert('Course deleted successfully!');
+      await apiService.deleteChapter(id);
+      await fetchChapters();
+      alert('Chapter deleted successfully!');
     } catch (err) {
-      setError(err.message || 'Failed to delete course');
-      alert('Failed to delete course: ' + err.message);
+      setError(err.message || 'Failed to delete chapter');
+      alert('Failed to delete chapter: ' + err.message);
     }
   };
 
-  const handleEditCourse = (course) => {
-    setSelectedCourse(course);
+  const handleEditChapter = (chapter) => {
+    setSelectedChapter(chapter);
     setFormData({
-      title: course.title || '',
-      description: course.description || '',
-      thumbnail_url: course.thumbnail_url || '',
-      order_index: course.order_index || 0,
-      status: course.status || 'active',
+      title: chapter.title || '',
+      description: chapter.description || '',
+      thumbnail_url: chapter.thumbnail_url || '',
+      order_index: chapter.order_index || 0,
+      status: chapter.status || 'active',
     });
     setIsModalOpen(true);
   };
 
-  const handleManageChapters = async (course) => {
-    setSelectedCourse(course);
-    setSelectedChapterIds([]);
-    await fetchCourseChapters(course.id);
-    setIsChapterModalOpen(true);
+  const handleManagePages = async (chapter) => {
+    setSelectedChapter(chapter);
+    setSelectedPageIds([]);
+    await fetchChapterPages(chapter.id);
+    setIsPageModalOpen(true);
   };
 
-  const handleAddChapterToCourse = async (chapterId) => {
-    if (!selectedCourse) return;
+  const handleAddPageToChapter = async (pageId) => {
+    if (!selectedChapter) return;
     try {
-      const currentMaxOrder = selectedCourseChapters.length > 0
-        ? Math.max(...selectedCourseChapters.map(c => c.course_order || 0))
+      const currentMaxOrder = selectedChapterPages.length > 0
+        ? Math.max(...selectedChapterPages.map(p => p.chapter_order || 0))
         : -1;
-      await apiService.addChapterToCourse(selectedCourse.id, chapterId, currentMaxOrder + 1);
-      await fetchCourseChapters(selectedCourse.id);
+      await apiService.addPageToChapter(selectedChapter.id, pageId, currentMaxOrder + 1);
+      await fetchChapterPages(selectedChapter.id);
     } catch (err) {
-      setError(err.message || 'Failed to add chapter');
-      alert('Failed to add chapter: ' + err.message);
+      setError(err.message || 'Failed to add page');
+      alert('Failed to add page: ' + err.message);
     }
   };
 
-  const handleBulkAddChapters = async () => {
-    if (!selectedCourse || selectedChapterIds.length === 0) return;
+  const handleBulkAddPages = async () => {
+    if (!selectedChapter || selectedPageIds.length === 0) return;
     try {
-      await apiService.addChaptersToCourse(selectedCourse.id, selectedChapterIds);
-      await fetchCourseChapters(selectedCourse.id);
-      setSelectedChapterIds([]);
-      alert(`${selectedChapterIds.length} chapter(s) added successfully!`);
+      await apiService.addPagesToChapter(selectedChapter.id, selectedPageIds);
+      await fetchChapterPages(selectedChapter.id);
+      setSelectedPageIds([]);
+      alert(`${selectedPageIds.length} page(s) added successfully!`);
     } catch (err) {
-      setError(err.message || 'Failed to add chapters');
-      alert('Failed to add chapters: ' + err.message);
+      setError(err.message || 'Failed to add pages');
+      alert('Failed to add pages: ' + err.message);
     }
   };
 
-  const handleToggleChapterSelection = (chapterId) => {
-    setSelectedChapterIds(prev => 
-      prev.includes(chapterId) 
-        ? prev.filter(id => id !== chapterId)
-        : [...prev, chapterId]
+  const handleTogglePageSelection = (pageId) => {
+    setSelectedPageIds(prev => 
+      prev.includes(pageId) 
+        ? prev.filter(id => id !== pageId)
+        : [...prev, pageId]
     );
   };
 
-  const handleRemoveChapterFromCourse = async (chapterId) => {
-    if (!selectedCourse) return;
+  const handleRemovePageFromChapter = async (pageId) => {
+    if (!selectedChapter) return;
     try {
-      await apiService.removeChapterFromCourse(selectedCourse.id, chapterId);
-      await fetchCourseChapters(selectedCourse.id);
+      await apiService.removePageFromChapter(selectedChapter.id, pageId);
+      await fetchChapterPages(selectedChapter.id);
     } catch (err) {
-      setError(err.message || 'Failed to remove chapter');
-      alert('Failed to remove chapter: ' + err.message);
+      setError(err.message || 'Failed to remove page');
+      alert('Failed to remove page: ' + err.message);
     }
   };
 
-  const handleMoveChapter = async (chapterId, direction) => {
-    if (!selectedCourse) return;
-    const currentIndex = selectedCourseChapters.findIndex(c => c.id === chapterId);
+  const handleMovePage = async (pageId, direction) => {
+    if (!selectedChapter) return;
+    const currentIndex = selectedChapterPages.findIndex(p => p.id === pageId);
     if (currentIndex === -1) return;
 
     const newIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
-    if (newIndex < 0 || newIndex >= selectedCourseChapters.length) return;
+    if (newIndex < 0 || newIndex >= selectedChapterPages.length) return;
 
-    const reordered = [...selectedCourseChapters];
+    const reordered = [...selectedChapterPages];
     [reordered[currentIndex], reordered[newIndex]] = [reordered[newIndex], reordered[currentIndex]];
 
-    const chapterOrders = reordered.map((chapter, index) => ({
-      chapterId: chapter.id,
+    const pageOrders = reordered.map((page, index) => ({
+      pageId: page.id,
       orderIndex: index,
     }));
 
     try {
-      await apiService.updateCourseChapterOrder(selectedCourse.id, chapterOrders);
-      await fetchCourseChapters(selectedCourse.id);
+      await apiService.updateChapterPageOrder(selectedChapter.id, pageOrders);
+      await fetchChapterPages(selectedChapter.id);
     } catch (err) {
-      setError(err.message || 'Failed to reorder chapters');
-      alert('Failed to reorder chapters: ' + err.message);
+      setError(err.message || 'Failed to reorder pages');
+      alert('Failed to reorder pages: ' + err.message);
     }
   };
 
@@ -238,7 +238,7 @@ const Courses = () => {
       order_index: 0,
       status: 'active',
     });
-    setSelectedCourse(null);
+    setSelectedChapter(null);
     setError(null);
   };
 
@@ -266,16 +266,16 @@ const Courses = () => {
     return badges[status] || <span className="badge">{status}</span>;
   };
 
-  const filteredCourses = courses.filter((course) => {
+  const filteredChapters = chapters.filter((chapter) => {
     const matchesSearch =
       !searchTerm ||
-      course.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (course.description && course.description.toLowerCase().includes(searchTerm.toLowerCase()));
+      chapter.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (chapter.description && chapter.description.toLowerCase().includes(searchTerm.toLowerCase()));
     return matchesSearch;
   });
 
-  const availableChapters = chapters.filter(
-    chapter => !selectedCourseChapters.some(cc => cc.id === chapter.id)
+  const availablePages = pages.filter(
+    page => !selectedChapterPages.some(cp => cp.id === page.id)
   );
 
   const columns = [
@@ -315,17 +315,17 @@ const Courses = () => {
             size="small"
             onClick={(e) => {
               e.stopPropagation();
-              handleManageChapters(row);
+              handleManagePages(row);
             }}
           >
-            Manage Chapters
+            Manage Pages
           </Button>
           <Button
             variant="ghost"
             size="small"
             onClick={(e) => {
               e.stopPropagation();
-              handleEditCourse(row);
+              handleEditChapter(row);
             }}
           >
             Edit
@@ -335,7 +335,7 @@ const Courses = () => {
             size="small"
             onClick={(e) => {
               e.stopPropagation();
-              handleDeleteCourse(row.id);
+              handleDeleteChapter(row.id);
             }}
           >
             Delete
@@ -346,16 +346,16 @@ const Courses = () => {
   ];
 
   return (
-    <div className="courses-container">
+    <div className="chapters-container">
       <Card>
         <div className="card-header">
-          <h1>Courses Management</h1>
-          <Button onClick={() => setIsModalOpen(true)}>Create Course</Button>
+          <h1>Chapters Management</h1>
+          <Button onClick={() => setIsModalOpen(true)}>Create Chapter</Button>
         </div>
 
         <div className="filters">
           <Input
-            placeholder="Search courses..."
+            placeholder="Search chapters..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             fullWidth
@@ -376,17 +376,17 @@ const Courses = () => {
 
         <DataTable
           columns={columns}
-          data={filteredCourses}
+          data={filteredChapters}
           loading={loading}
-          emptyMessage="No courses found"
+          emptyMessage="No chapters found"
         />
       </Card>
 
-      {/* Create/Edit Course Modal */}
+      {/* Create/Edit Chapter Modal */}
       <Modal
         isOpen={isModalOpen}
         onClose={handleModalClose}
-        title={selectedCourse ? 'Edit Course' : 'Create Course'}
+        title={selectedChapter ? 'Edit Chapter' : 'Create Chapter'}
         size="large"
         footer={
           <div className="modal-footer-actions">
@@ -394,10 +394,10 @@ const Courses = () => {
               Cancel
             </Button>
             <Button
-              onClick={selectedCourse ? handleUpdateCourse : handleCreateCourse}
+              onClick={selectedChapter ? handleUpdateChapter : handleCreateChapter}
               disabled={isSubmitting}
             >
-              {isSubmitting ? 'Saving...' : selectedCourse ? 'Update' : 'Create'}
+              {isSubmitting ? 'Saving...' : selectedChapter ? 'Update' : 'Create'}
             </Button>
           </div>
         }
@@ -405,7 +405,7 @@ const Courses = () => {
         <div className="form-container">
           <Input
             label="Title"
-            placeholder="Enter course title"
+            placeholder="Enter chapter title"
             value={formData.title}
             onChange={(e) => setFormData({ ...formData, title: e.target.value })}
             fullWidth
@@ -415,7 +415,7 @@ const Courses = () => {
 
           <Input
             label="Description"
-            placeholder="Enter course description"
+            placeholder="Enter chapter description"
             value={formData.description}
             onChange={(e) => setFormData({ ...formData, description: e.target.value })}
             fullWidth
@@ -474,31 +474,31 @@ const Courses = () => {
         </div>
       </Modal>
 
-      {/* Manage Chapters Modal */}
+      {/* Manage Pages Modal */}
       <Modal
-        isOpen={isChapterModalOpen}
+        isOpen={isPageModalOpen}
         onClose={() => {
-          setIsChapterModalOpen(false);
-          setSelectedCourse(null);
-          setSelectedCourseChapters([]);
+          setIsPageModalOpen(false);
+          setSelectedChapter(null);
+          setSelectedChapterPages([]);
         }}
-        title={selectedCourse ? `Manage Chapters: ${selectedCourse.title}` : 'Manage Chapters'}
+        title={selectedChapter ? `Manage Pages: ${selectedChapter.title}` : 'Manage Pages'}
         size="large"
       >
-        <div className="chapter-management-container">
-          <div className="chapter-list-section">
-            <h3>Chapters in Course</h3>
-            {selectedCourseChapters.length === 0 ? (
-              <p className="text-muted">No chapters added yet</p>
+        <div className="page-management-container">
+          <div className="page-list-section">
+            <h3>Pages in Chapter</h3>
+            {selectedChapterPages.length === 0 ? (
+              <p className="text-muted">No pages added yet</p>
             ) : (
               <div className="ordered-list">
-                {selectedCourseChapters.map((chapter, index) => (
-                  <div key={chapter.id} className="ordered-item">
+                {selectedChapterPages.map((page, index) => (
+                  <div key={page.id} className="ordered-item">
                     <div className="order-controls">
                       <Button
                         variant="ghost"
                         size="small"
-                        onClick={() => handleMoveChapter(chapter.id, 'up')}
+                        onClick={() => handleMovePage(page.id, 'up')}
                         disabled={index === 0}
                       >
                         ↑
@@ -507,20 +507,20 @@ const Courses = () => {
                       <Button
                         variant="ghost"
                         size="small"
-                        onClick={() => handleMoveChapter(chapter.id, 'down')}
-                        disabled={index === selectedCourseChapters.length - 1}
+                        onClick={() => handleMovePage(page.id, 'down')}
+                        disabled={index === selectedChapterPages.length - 1}
                       >
                         ↓
                       </Button>
                     </div>
                     <div className="item-content">
-                      <strong>{chapter.title}</strong>
-                      {chapter.description && <p className="item-description">{chapter.description}</p>}
+                      <strong>{page.title}</strong>
+                      {page.description && <p className="item-description">{page.description}</p>}
                     </div>
                     <Button
                       variant="ghost"
                       size="small"
-                      onClick={() => handleRemoveChapterFromCourse(chapter.id)}
+                      onClick={() => handleRemovePageFromChapter(page.id)}
                     >
                       Remove
                     </Button>
@@ -530,39 +530,39 @@ const Courses = () => {
             )}
           </div>
 
-          <div className="chapter-add-section">
+          <div className="page-add-section">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
-              <h3 style={{ margin: 0 }}>Add Chapters</h3>
-              {selectedChapterIds.length > 0 && (
+              <h3 style={{ margin: 0 }}>Add Pages</h3>
+              {selectedPageIds.length > 0 && (
                 <Button
                   variant="primary"
                   size="small"
-                  onClick={handleBulkAddChapters}
+                  onClick={handleBulkAddPages}
                 >
-                  Add Selected ({selectedChapterIds.length})
+                  Add Selected ({selectedPageIds.length})
                 </Button>
               )}
             </div>
-            {availableChapters.length === 0 ? (
-              <p className="text-muted">All chapters are already added</p>
+            {availablePages.length === 0 ? (
+              <p className="text-muted">All pages are already added</p>
             ) : (
               <div className="available-items">
-                {availableChapters.map((chapter) => (
-                  <div key={chapter.id} className="available-item">
+                {availablePages.map((page) => (
+                  <div key={page.id} className="available-item">
                     <input
                       type="checkbox"
-                      checked={selectedChapterIds.includes(chapter.id)}
-                      onChange={() => handleToggleChapterSelection(chapter.id)}
+                      checked={selectedPageIds.includes(page.id)}
+                      onChange={() => handleTogglePageSelection(page.id)}
                       style={{ marginRight: '10px' }}
                     />
                     <div className="item-content">
-                      <strong>{chapter.title}</strong>
-                      {chapter.description && <p className="item-description">{chapter.description}</p>}
+                      <strong>{page.title}</strong>
+                      {page.description && <p className="item-description">{page.description}</p>}
                     </div>
                     <Button
                       variant="ghost"
                       size="small"
-                      onClick={() => handleAddChapterToCourse(chapter.id)}
+                      onClick={() => handleAddPageToChapter(page.id)}
                     >
                       Add
                     </Button>
@@ -577,4 +577,5 @@ const Courses = () => {
   );
 };
 
-export default Courses;
+export default Chapters;
+

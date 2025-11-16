@@ -1,4 +1,4 @@
-.courses-container {
+.packages-container {
   padding: 20px;
 }
 
@@ -43,10 +43,6 @@
   justify-content: flex-end;
 }
 
-.description-cell {
-  color: #666;
-}
-
 .text-muted {
   color: #999;
   font-style: italic;
@@ -58,16 +54,10 @@
   gap: 20px;
 }
 
-.uploaded-file-info {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-top: 8px;
-}
-
-.uploaded-file-url {
-  color: #28a745;
-  font-size: 14px;
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
 }
 
 .modal-footer-actions {
@@ -76,21 +66,21 @@
   justify-content: flex-end;
 }
 
-.chapter-management-container {
+.course-management-container {
   display: flex;
   flex-direction: column;
   gap: 30px;
 }
 
-.chapter-list-section,
-.chapter-add-section {
+.course-list-section,
+.course-add-section {
   border: 1px solid #e0e0e0;
   border-radius: 8px;
   padding: 20px;
 }
 
-.chapter-list-section h3,
-.chapter-add-section h3 {
+.course-list-section h3,
+.course-add-section h3 {
   margin-top: 0;
   margin-bottom: 15px;
   font-size: 18px;
@@ -115,20 +105,6 @@
   border: 1px solid #e0e0e0;
 }
 
-.order-controls {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  min-width: 50px;
-}
-
-.order-number {
-  font-weight: 600;
-  color: #666;
-  font-size: 14px;
-}
-
 .item-content {
   flex: 1;
 }
@@ -143,3 +119,30 @@
   font-size: 13px;
   color: #666;
 }
+
+.badge--free {
+  background-color: #e3f2fd;
+  color: #1976d2;
+}
+
+.badge--basic {
+  background-color: #e8f5e9;
+  color: #388e3c;
+}
+
+.badge--intermediate {
+  background-color: #fff3e0;
+  color: #f57c00;
+}
+
+.badge--advanced {
+  background-color: #fce4ec;
+  color: #c2185b;
+}
+
+.badge--premium {
+  background-color: #f3e5f5;
+  color: #7b1fa2;
+}
+
+

@@ -1,4 +1,4 @@
-.courses-container {
+.menus-container {
   padding: 20px;
 }
 
@@ -76,21 +76,21 @@
   justify-content: flex-end;
 }
 
-.chapter-management-container {
+.course-management-container {
   display: flex;
   flex-direction: column;
   gap: 30px;
 }
 
-.chapter-list-section,
-.chapter-add-section {
+.course-list-section,
+.course-add-section {
   border: 1px solid #e0e0e0;
   border-radius: 8px;
   padding: 20px;
 }
 
-.chapter-list-section h3,
-.chapter-add-section h3 {
+.course-list-section h3,
+.course-add-section h3 {
   margin-top: 0;
   margin-bottom: 15px;
   font-size: 18px;
@@ -143,3 +143,5 @@
   font-size: 13px;
   color: #666;
 }
+
+

@@ -6,19 +6,19 @@ import Input from '../../components/common/Input/Input';
 import Modal from '../../components/common/Modal/Modal';
 import FileUpload from '../../components/common/FileUpload/FileUpload';
 import apiService from '../../services/api';
-import './Courses.css';
+import './Menus.css';
 
-const Courses = () => {
+const Menus = () => {
+  const [menus, setMenus] = useState([]);
   const [courses, setCourses] = useState([]);
-  const [chapters, setChapters] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isChapterModalOpen, setIsChapterModalOpen] = useState(false);
-  const [selectedCourse, setSelectedCourse] = useState(null);
-  const [selectedCourseChapters, setSelectedCourseChapters] = useState([]);
-  const [selectedChapterIds, setSelectedChapterIds] = useState([]);
+  const [isCourseModalOpen, setIsCourseModalOpen] = useState(false);
+  const [selectedMenu, setSelectedMenu] = useState(null);
+  const [selectedMenuCourses, setSelectedMenuCourses] = useState([]);
+  const [selectedCourseIds, setSelectedCourseIds] = useState([]);
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -30,18 +30,18 @@ const Courses = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
+    fetchMenus();
     fetchCourses();
-    fetchChapters();
   }, [filterStatus]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      fetchCourses();
+      fetchMenus();
     }, 300);
     return () => clearTimeout(timer);
   }, [searchTerm]);
 
-  const fetchCourses = async () => {
+  const fetchMenus = async () => {
     try {
       setLoading(true);
       setError(null);
@@ -50,58 +50,35 @@ const Courses = () => {
         status: filterStatus || undefined,
         limit: 100,
       };
-      const response = await apiService.getCourses(filters);
-      setCourses(response.data || []);
+      const response = await apiService.getMenus(filters);
+      setMenus(response.data || []);
     } catch (err) {
-      setError(err.message || 'Failed to fetch courses');
-      console.error('Error fetching courses:', err);
+      setError(err.message || 'Failed to fetch menus');
+      console.error('Error fetching menus:', err);
     } finally {
       setLoading(false);
     }
   };
 
-  const fetchChapters = async () => {
+  const fetchCourses = async () => {
     try {
-      const response = await apiService.getChapters({ limit: 1000 });
-      setChapters(response.data || []);
+      const response = await apiService.getCourses({ limit: 1000 });
+      setCourses(response.data || []);
     } catch (err) {
-      console.error('Error fetching chapters:', err);
+      console.error('Error fetching courses:', err);
     }
   };
 
-  const fetchCourseChapters = async (courseId) => {
+  const fetchMenuCourses = async (menuId) => {
     try {
-      const response = await apiService.getChaptersByCourse(courseId);
-      setSelectedCourseChapters(response.data || []);
+      const response = await apiService.getCoursesByMenu(menuId);
+      setSelectedMenuCourses(response.data || []);
     } catch (err) {
-      console.error('Error fetching course chapters:', err);
+      console.error('Error fetching menu courses:', err);
     }
   };
 
-  const handleCreateCourse = async () => {
-    try {
-      setIsSubmitting(true);
-      setError(null);
-
-      if (!formData.title) {
-        setError('Title is required');
-        setIsSubmitting(false);
-        return;
-      }
-
-      await apiService.createCourse(formData);
-      await fetchCourses();
-      setIsModalOpen(false);
-      resetForm();
-      alert('Course created successfully!');
-    } catch (err) {
-      setError(err.message || 'Failed to create course');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleUpdateCourse = async () => {
+  const handleCreateMenu = async () => {
     try {
       setIsSubmitting(true);
       setError(null);
@@ -112,121 +89,144 @@ const Courses = () => {
         return;
       }
 
-      await apiService.updateCourse(selectedCourse.id, formData);
-      await fetchCourses();
+      await apiService.createMenu(formData);
+      await fetchMenus();
       setIsModalOpen(false);
-      setSelectedCourse(null);
       resetForm();
-      alert('Course updated successfully!');
+      alert('Menu created successfully!');
     } catch (err) {
-      setError(err.message || 'Failed to update course');
+      setError(err.message || 'Failed to create menu');
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const handleDeleteCourse = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this course?')) {
+  const handleUpdateMenu = async () => {
+    try {
+      setIsSubmitting(true);
+      setError(null);
+
+      if (!formData.title) {
+        setError('Title is required');
+        setIsSubmitting(false);
+        return;
+      }
+
+      await apiService.updateMenu(selectedMenu.id, formData);
+      await fetchMenus();
+      setIsModalOpen(false);
+      setSelectedMenu(null);
+      resetForm();
+      alert('Menu updated successfully!');
+    } catch (err) {
+      setError(err.message || 'Failed to update menu');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleDeleteMenu = async (id) => {
+    if (!window.confirm('Are you sure you want to delete this menu?')) {
       return;
     }
 
     try {
-      await apiService.deleteCourse(id);
-      await fetchCourses();
-      alert('Course deleted successfully!');
+      await apiService.deleteMenu(id);
+      await fetchMenus();
+      alert('Menu deleted successfully!');
     } catch (err) {
-      setError(err.message || 'Failed to delete course');
-      alert('Failed to delete course: ' + err.message);
+      setError(err.message || 'Failed to delete menu');
+      alert('Failed to delete menu: ' + err.message);
     }
   };
 
-  const handleEditCourse = (course) => {
-    setSelectedCourse(course);
+  const handleEditMenu = (menu) => {
+    setSelectedMenu(menu);
     setFormData({
-      title: course.title || '',
-      description: course.description || '',
-      thumbnail_url: course.thumbnail_url || '',
-      order_index: course.order_index || 0,
-      status: course.status || 'active',
+      title: menu.title || '',
+      description: menu.description || '',
+      thumbnail_url: menu.thumbnail_url || '',
+      order_index: menu.order_index || 0,
+      status: menu.status || 'active',
     });
     setIsModalOpen(true);
   };
 
-  const handleManageChapters = async (course) => {
-    setSelectedCourse(course);
-    setSelectedChapterIds([]);
-    await fetchCourseChapters(course.id);
-    setIsChapterModalOpen(true);
+  const handleManageCourses = async (menu) => {
+    setSelectedMenu(menu);
+    setSelectedCourseIds([]);
+    await fetchMenuCourses(menu.id);
+    setIsCourseModalOpen(true);
   };
 
-  const handleAddChapterToCourse = async (chapterId) => {
-    if (!selectedCourse) return;
+  const handleAddCourseToMenu = async (courseId) => {
+    if (!selectedMenu) return;
     try {
-      const currentMaxOrder = selectedCourseChapters.length > 0
-        ? Math.max(...selectedCourseChapters.map(c => c.course_order || 0))
+      const currentMaxOrder = selectedMenuCourses.length > 0
+        ? Math.max(...selectedMenuCourses.map(c => c.menu_order || 0))
         : -1;
-      await apiService.addChapterToCourse(selectedCourse.id, chapterId, currentMaxOrder + 1);
-      await fetchCourseChapters(selectedCourse.id);
+      await apiService.addCourseToMenu(selectedMenu.id, courseId, currentMaxOrder + 1);
+      await fetchMenuCourses(selectedMenu.id);
     } catch (err) {
-      setError(err.message || 'Failed to add chapter');
-      alert('Failed to add chapter: ' + err.message);
+      setError(err.message || 'Failed to add course');
+      alert('Failed to add course: ' + err.message);
     }
   };
 
-  const handleBulkAddChapters = async () => {
-    if (!selectedCourse || selectedChapterIds.length === 0) return;
+  const handleBulkAddCourses = async () => {
+    if (!selectedMenu || selectedCourseIds.length === 0) return;
     try {
-      await apiService.addChaptersToCourse(selectedCourse.id, selectedChapterIds);
-      await fetchCourseChapters(selectedCourse.id);
-      setSelectedChapterIds([]);
-      alert(`${selectedChapterIds.length} chapter(s) added successfully!`);
+      await apiService.addCoursesToMenu(selectedMenu.id, selectedCourseIds);
+      await fetchMenuCourses(selectedMenu.id);
+      setSelectedCourseIds([]);
+      alert(`${selectedCourseIds.length} course(s) added successfully!`);
     } catch (err) {
-      setError(err.message || 'Failed to add chapters');
-      alert('Failed to add chapters: ' + err.message);
+      setError(err.message || 'Failed to add courses');
+      alert('Failed to add courses: ' + err.message);
     }
   };
 
-  const handleToggleChapterSelection = (chapterId) => {
-    setSelectedChapterIds(prev => 
-      prev.includes(chapterId) 
-        ? prev.filter(id => id !== chapterId)
-        : [...prev, chapterId]
+  const handleToggleCourseSelection = (courseId) => {
+    setSelectedCourseIds(prev => 
+      prev.includes(courseId) 
+        ? prev.filter(id => id !== courseId)
+        : [...prev, courseId]
     );
   };
 
-  const handleRemoveChapterFromCourse = async (chapterId) => {
-    if (!selectedCourse) return;
+  const handleRemoveCourseFromMenu = async (courseId) => {
+    if (!selectedMenu) return;
     try {
-      await apiService.removeChapterFromCourse(selectedCourse.id, chapterId);
-      await fetchCourseChapters(selectedCourse.id);
+      await apiService.removeCourseFromMenu(selectedMenu.id, courseId);
+      await fetchMenuCourses(selectedMenu.id);
     } catch (err) {
-      setError(err.message || 'Failed to remove chapter');
-      alert('Failed to remove chapter: ' + err.message);
+      setError(err.message || 'Failed to remove course');
+      alert('Failed to remove course: ' + err.message);
     }
   };
 
-  const handleMoveChapter = async (chapterId, direction) => {
-    if (!selectedCourse) return;
-    const currentIndex = selectedCourseChapters.findIndex(c => c.id === chapterId);
+  const handleMoveCourse = async (courseId, direction) => {
+    if (!selectedMenu) return;
+    const currentIndex = selectedMenuCourses.findIndex(c => c.id === courseId);
     if (currentIndex === -1) return;
 
     const newIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
-    if (newIndex < 0 || newIndex >= selectedCourseChapters.length) return;
+    if (newIndex < 0 || newIndex >= selectedMenuCourses.length) return;
 
-    const reordered = [...selectedCourseChapters];
+    const reordered = [...selectedMenuCourses];
     [reordered[currentIndex], reordered[newIndex]] = [reordered[newIndex], reordered[currentIndex]];
 
-    const chapterOrders = reordered.map((chapter, index) => ({
-      chapterId: chapter.id,
+    const courseOrders = reordered.map((course, index) => ({
+      courseId: course.id,
       orderIndex: index,
     }));
 
     try {
-      await apiService.updateCourseChapterOrder(selectedCourse.id, chapterOrders);
-      await fetchCourseChapters(selectedCourse.id);
+      await apiService.updateMenuCourseOrder(selectedMenu.id, courseOrders);
+      await fetchMenuCourses(selectedMenu.id);
     } catch (err) {
-      setError(err.message || 'Failed to reorder chapters');
-      alert('Failed to reorder chapters: ' + err.message);
+      setError(err.message || 'Failed to reorder courses');
+      alert('Failed to reorder courses: ' + err.message);
     }
   };
 
@@ -238,7 +238,7 @@ const Courses = () => {
       order_index: 0,
       status: 'active',
     });
-    setSelectedCourse(null);
+    setSelectedMenu(null);
     setError(null);
   };
 
@@ -266,16 +266,16 @@ const Courses = () => {
     return badges[status] || <span className="badge">{status}</span>;
   };
 
-  const filteredCourses = courses.filter((course) => {
+  const filteredMenus = menus.filter((menu) => {
     const matchesSearch =
       !searchTerm ||
-      course.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (course.description && course.description.toLowerCase().includes(searchTerm.toLowerCase()));
+      menu.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (menu.description && menu.description.toLowerCase().includes(searchTerm.toLowerCase()));
     return matchesSearch;
   });
 
-  const availableChapters = chapters.filter(
-    chapter => !selectedCourseChapters.some(cc => cc.id === chapter.id)
+  const availableCourses = courses.filter(
+    course => !selectedMenuCourses.some(mc => mc.id === course.id)
   );
 
   const columns = [
@@ -315,17 +315,17 @@ const Courses = () => {
             size="small"
             onClick={(e) => {
               e.stopPropagation();
-              handleManageChapters(row);
+              handleManageCourses(row);
             }}
           >
-            Manage Chapters
+            Manage Courses
           </Button>
           <Button
             variant="ghost"
             size="small"
             onClick={(e) => {
               e.stopPropagation();
-              handleEditCourse(row);
+              handleEditMenu(row);
             }}
           >
             Edit
@@ -335,7 +335,7 @@ const Courses = () => {
             size="small"
             onClick={(e) => {
               e.stopPropagation();
-              handleDeleteCourse(row.id);
+              handleDeleteMenu(row.id);
             }}
           >
             Delete
@@ -346,16 +346,16 @@ const Courses = () => {
   ];
 
   return (
-    <div className="courses-container">
+    <div className="menus-container">
       <Card>
         <div className="card-header">
-          <h1>Courses Management</h1>
-          <Button onClick={() => setIsModalOpen(true)}>Create Course</Button>
+          <h1>Menus Management</h1>
+          <Button onClick={() => setIsModalOpen(true)}>Create Menu</Button>
         </div>
 
         <div className="filters">
           <Input
-            placeholder="Search courses..."
+            placeholder="Search menus..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             fullWidth
@@ -376,17 +376,17 @@ const Courses = () => {
 
         <DataTable
           columns={columns}
-          data={filteredCourses}
+          data={filteredMenus}
           loading={loading}
-          emptyMessage="No courses found"
+          emptyMessage="No menus found"
         />
       </Card>
 
-      {/* Create/Edit Course Modal */}
+      {/* Create/Edit Menu Modal */}
       <Modal
         isOpen={isModalOpen}
         onClose={handleModalClose}
-        title={selectedCourse ? 'Edit Course' : 'Create Course'}
+        title={selectedMenu ? 'Edit Menu' : 'Create Menu'}
         size="large"
         footer={
           <div className="modal-footer-actions">
@@ -394,10 +394,10 @@ const Courses = () => {
               Cancel
             </Button>
             <Button
-              onClick={selectedCourse ? handleUpdateCourse : handleCreateCourse}
+              onClick={selectedMenu ? handleUpdateMenu : handleCreateMenu}
               disabled={isSubmitting}
             >
-              {isSubmitting ? 'Saving...' : selectedCourse ? 'Update' : 'Create'}
+              {isSubmitting ? 'Saving...' : selectedMenu ? 'Update' : 'Create'}
             </Button>
           </div>
         }
@@ -405,7 +405,7 @@ const Courses = () => {
         <div className="form-container">
           <Input
             label="Title"
-            placeholder="Enter course title"
+            placeholder="Enter menu title"
             value={formData.title}
             onChange={(e) => setFormData({ ...formData, title: e.target.value })}
             fullWidth
@@ -415,7 +415,7 @@ const Courses = () => {
 
           <Input
             label="Description"
-            placeholder="Enter course description"
+            placeholder="Enter menu description"
             value={formData.description}
             onChange={(e) => setFormData({ ...formData, description: e.target.value })}
             fullWidth
@@ -474,31 +474,31 @@ const Courses = () => {
         </div>
       </Modal>
 
-      {/* Manage Chapters Modal */}
+      {/* Manage Courses Modal */}
       <Modal
-        isOpen={isChapterModalOpen}
+        isOpen={isCourseModalOpen}
         onClose={() => {
-          setIsChapterModalOpen(false);
-          setSelectedCourse(null);
-          setSelectedCourseChapters([]);
+          setIsCourseModalOpen(false);
+          setSelectedMenu(null);
+          setSelectedMenuCourses([]);
         }}
-        title={selectedCourse ? `Manage Chapters: ${selectedCourse.title}` : 'Manage Chapters'}
+        title={selectedMenu ? `Manage Courses: ${selectedMenu.title}` : 'Manage Courses'}
         size="large"
       >
-        <div className="chapter-management-container">
-          <div className="chapter-list-section">
-            <h3>Chapters in Course</h3>
-            {selectedCourseChapters.length === 0 ? (
-              <p className="text-muted">No chapters added yet</p>
+        <div className="course-management-container">
+          <div className="course-list-section">
+            <h3>Courses in Menu</h3>
+            {selectedMenuCourses.length === 0 ? (
+              <p className="text-muted">No courses added yet</p>
             ) : (
               <div className="ordered-list">
-                {selectedCourseChapters.map((chapter, index) => (
-                  <div key={chapter.id} className="ordered-item">
+                {selectedMenuCourses.map((course, index) => (
+                  <div key={course.id} className="ordered-item">
                     <div className="order-controls">
                       <Button
                         variant="ghost"
                         size="small"
-                        onClick={() => handleMoveChapter(chapter.id, 'up')}
+                        onClick={() => handleMoveCourse(course.id, 'up')}
                         disabled={index === 0}
                       >
                         ↑
@@ -507,20 +507,20 @@ const Courses = () => {
                       <Button
                         variant="ghost"
                         size="small"
-                        onClick={() => handleMoveChapter(chapter.id, 'down')}
-                        disabled={index === selectedCourseChapters.length - 1}
+                        onClick={() => handleMoveCourse(course.id, 'down')}
+                        disabled={index === selectedMenuCourses.length - 1}
                       >
                         ↓
                       </Button>
                     </div>
                     <div className="item-content">
-                      <strong>{chapter.title}</strong>
-                      {chapter.description && <p className="item-description">{chapter.description}</p>}
+                      <strong>{course.title}</strong>
+                      {course.description && <p className="item-description">{course.description}</p>}
                     </div>
                     <Button
                       variant="ghost"
                       size="small"
-                      onClick={() => handleRemoveChapterFromCourse(chapter.id)}
+                      onClick={() => handleRemoveCourseFromMenu(course.id)}
                     >
                       Remove
                     </Button>
@@ -530,39 +530,39 @@ const Courses = () => {
             )}
           </div>
 
-          <div className="chapter-add-section">
+          <div className="course-add-section">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
-              <h3 style={{ margin: 0 }}>Add Chapters</h3>
-              {selectedChapterIds.length > 0 && (
+              <h3 style={{ margin: 0 }}>Add Courses</h3>
+              {selectedCourseIds.length > 0 && (
                 <Button
                   variant="primary"
                   size="small"
-                  onClick={handleBulkAddChapters}
+                  onClick={handleBulkAddCourses}
                 >
-                  Add Selected ({selectedChapterIds.length})
+                  Add Selected ({selectedCourseIds.length})
                 </Button>
               )}
             </div>
-            {availableChapters.length === 0 ? (
-              <p className="text-muted">All chapters are already added</p>
+            {availableCourses.length === 0 ? (
+              <p className="text-muted">All courses are already added</p>
             ) : (
               <div className="available-items">
-                {availableChapters.map((chapter) => (
-                  <div key={chapter.id} className="available-item">
+                {availableCourses.map((course) => (
+                  <div key={course.id} className="available-item">
                     <input
                       type="checkbox"
-                      checked={selectedChapterIds.includes(chapter.id)}
-                      onChange={() => handleToggleChapterSelection(chapter.id)}
+                      checked={selectedCourseIds.includes(course.id)}
+                      onChange={() => handleToggleCourseSelection(course.id)}
                       style={{ marginRight: '10px' }}
                     />
                     <div className="item-content">
-                      <strong>{chapter.title}</strong>
-                      {chapter.description && <p className="item-description">{chapter.description}</p>}
+                      <strong>{course.title}</strong>
+                      {course.description && <p className="item-description">{course.description}</p>}
                     </div>
                     <Button
                       variant="ghost"
                       size="small"
-                      onClick={() => handleAddChapterToCourse(chapter.id)}
+                      onClick={() => handleAddCourseToMenu(course.id)}
                     >
                       Add
                     </Button>
@@ -577,4 +577,5 @@ const Courses = () => {
   );
 };
 
-export default Courses;
+export default Menus;
+

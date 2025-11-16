@@ -12,6 +12,8 @@ import pageRoutes from './routes/pages.js';
 import chapterRoutes from './routes/chapters.js';
 import courseRoutes from './routes/courses.js';
 import menuRoutes from './routes/menus.js';
+import packageRoutes from './routes/packages.js';
+import offerRoutes from './routes/offers.js';
 import pool from './config/database.js';
 
 dotenv.config();
@@ -59,6 +61,8 @@ app.use('/api/pages', pageRoutes);
 app.use('/api/chapters', chapterRoutes);
 app.use('/api/courses', courseRoutes);
 app.use('/api/menus', menuRoutes);
+app.use('/api/packages', packageRoutes);
+app.use('/api/offers', offerRoutes);
 
 // 404 handler
 app.use((req, res) => {
