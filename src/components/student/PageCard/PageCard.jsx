@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import ContentViewer from '../ContentViewer/ContentViewer';
+import { useNavigate } from 'react-router-dom';
 import './PageCard.css';
 
 const PageCard = ({ page, chapterId }) => {
   const [expanded, setExpanded] = useState(false);
-  const [viewingContent, setViewingContent] = useState(false);
+  const navigate = useNavigate();
 
   const handleToggle = () => {
     setExpanded(!expanded);
@@ -12,11 +12,8 @@ const PageCard = ({ page, chapterId }) => {
 
   const handleViewContent = (e) => {
     e.stopPropagation();
-    setViewingContent(true);
-  };
-
-  const handleCloseContent = () => {
-    setViewingContent(false);
+    // Navigate to content page using page ID
+    navigate(`/student/content/${page.id}`);
   };
 
   return (
@@ -47,13 +44,6 @@ const PageCard = ({ page, chapterId }) => {
           </div>
         </div>
       </div>
-
-      {viewingContent && (
-        <ContentViewer 
-          content={page} 
-          onClose={handleCloseContent}
-        />
-      )}
     </>
   );
 };

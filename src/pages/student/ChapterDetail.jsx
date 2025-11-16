@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import apiService from '../../services/api';
-import ContentViewer from '../../components/student/ContentViewer/ContentViewer';
 import './ChapterDetail.css';
 
 const ChapterDetail = () => {
@@ -9,7 +8,6 @@ const ChapterDetail = () => {
   const navigate = useNavigate();
   const [chapter, setChapter] = useState(null);
   const [pages, setPages] = useState([]);
-  const [selectedPage, setSelectedPage] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -40,11 +38,8 @@ const ChapterDetail = () => {
   };
 
   const handlePageClick = (page) => {
-    setSelectedPage(page);
-  };
-
-  const handleCloseContent = () => {
-    setSelectedPage(null);
+    // Navigate to content page using page ID
+    navigate(`/student/content/${page.id}`);
   };
 
   if (loading) {
@@ -130,11 +125,6 @@ const ChapterDetail = () => {
           </div>
         )}
       </div>
-
-      {/* Content Viewer Modal */}
-      {selectedPage && (
-        <ContentViewer content={selectedPage} onClose={handleCloseContent} />
-      )}
     </div>
   );
 };

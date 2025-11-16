@@ -30,6 +30,7 @@ import StudentProfile from './pages/student/Profile'
 import MenuDetail from './pages/student/MenuDetail'
 import CourseDetail from './pages/student/CourseDetail'
 import ChapterDetail from './pages/student/ChapterDetail'
+import ContentPage from './pages/student/ContentPage'
 import './App.css'
 
 function App() {
@@ -81,6 +82,7 @@ function App() {
             <Route path="menu/:menuId" element={<MenuDetail />} />
             <Route path="course/:courseId" element={<CourseDetail />} />
             <Route path="chapter/:chapterId" element={<ChapterDetail />} />
+            <Route path="content/:contentId" element={<ContentPage />} />
           </Route>
         </Routes>
       </AuthProvider>
