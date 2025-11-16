@@ -8,6 +8,10 @@ import featureRoutes from './routes/features.js';
 import permissionRoutes from './routes/permissions.js';
 import contentRoutes from './routes/contents.js';
 import uploadRoutes from './routes/upload.js';
+import pageRoutes from './routes/pages.js';
+import chapterRoutes from './routes/chapters.js';
+import courseRoutes from './routes/courses.js';
+import menuRoutes from './routes/menus.js';
 import pool from './config/database.js';
 
 dotenv.config();
@@ -51,6 +55,10 @@ app.use('/api/features', featureRoutes);
 app.use('/api/permissions', permissionRoutes);
 app.use('/api/contents', contentRoutes);
 app.use('/api/upload', uploadRoutes);
+app.use('/api/pages', pageRoutes);
+app.use('/api/chapters', chapterRoutes);
+app.use('/api/courses', courseRoutes);
+app.use('/api/menus', menuRoutes);
 
 // 404 handler
 app.use((req, res) => {

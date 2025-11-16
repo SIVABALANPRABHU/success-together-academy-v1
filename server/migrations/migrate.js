@@ -119,6 +119,249 @@ const createContentsTable = async () => {
   }
 };
 
+const createCourseManagementTables = async () => {
+  // Create pages table
+  const pagesTableExists = await pool.query(`
+    SELECT EXISTS (
+      SELECT FROM information_schema.tables 
+      WHERE table_schema = 'public' 
+      AND table_name = 'pages'
+    );
+  `);
+  
+  if (!pagesTableExists.rows[0].exists) {
+    await pool.query(`
+      CREATE TABLE pages (
+        id SERIAL PRIMARY KEY,
+        title VARCHAR(255) NOT NULL,
+        description TEXT,
+        thumbnail_url VARCHAR(500),
+        content_id INTEGER REFERENCES contents(id) ON DELETE SET NULL,
+        order_index INTEGER DEFAULT 0,
+        status VARCHAR(50) DEFAULT 'active' CHECK (status IN ('active', 'inactive', 'draft')),
+        created_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+    await pool.query('CREATE INDEX idx_pages_content_id ON pages(content_id)');
+    await pool.query('CREATE INDEX idx_pages_status ON pages(status)');
+    await pool.query('CREATE INDEX idx_pages_order ON pages(order_index)');
+  } else {
+    // Table exists - check and add missing columns
+    const columnExists = await pool.query(`
+      SELECT EXISTS (
+        SELECT FROM information_schema.columns 
+        WHERE table_schema = 'public' 
+        AND table_name = 'pages' 
+        AND column_name = 'order_index'
+      );
+    `);
+    if (!columnExists.rows[0].exists) {
+      await pool.query('ALTER TABLE pages ADD COLUMN order_index INTEGER DEFAULT 0');
+      await pool.query('CREATE INDEX IF NOT EXISTS idx_pages_order ON pages(order_index)');
+    }
+  }
+
+  // Create chapters table
+  const chaptersTableExists = await pool.query(`
+    SELECT EXISTS (
+      SELECT FROM information_schema.tables 
+      WHERE table_schema = 'public' 
+      AND table_name = 'chapters'
+    );
+  `);
+  
+  if (!chaptersTableExists.rows[0].exists) {
+    await pool.query(`
+      CREATE TABLE chapters (
+        id SERIAL PRIMARY KEY,
+        title VARCHAR(255) NOT NULL,
+        description TEXT,
+        thumbnail_url VARCHAR(500),
+        order_index INTEGER DEFAULT 0,
+        status VARCHAR(50) DEFAULT 'active' CHECK (status IN ('active', 'inactive', 'draft')),
+        created_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+    await pool.query('CREATE INDEX idx_chapters_status ON chapters(status)');
+    await pool.query('CREATE INDEX idx_chapters_order ON chapters(order_index)');
+  } else {
+    // Table exists - check and add missing columns
+    const columnExists = await pool.query(`
+      SELECT EXISTS (
+        SELECT FROM information_schema.columns 
+        WHERE table_schema = 'public' 
+        AND table_name = 'chapters' 
+        AND column_name = 'order_index'
+      );
+    `);
+    if (!columnExists.rows[0].exists) {
+      await pool.query('ALTER TABLE chapters ADD COLUMN order_index INTEGER DEFAULT 0');
+      await pool.query('CREATE INDEX IF NOT EXISTS idx_chapters_order ON chapters(order_index)');
+    }
+  }
+
+  // Create courses table
+  const coursesTableExists = await pool.query(`
+    SELECT EXISTS (
+      SELECT FROM information_schema.tables 
+      WHERE table_schema = 'public' 
+      AND table_name = 'courses'
+    );
+  `);
+  
+  if (!coursesTableExists.rows[0].exists) {
+    await pool.query(`
+      CREATE TABLE courses (
+        id SERIAL PRIMARY KEY,
+        title VARCHAR(255) NOT NULL,
+        description TEXT,
+        thumbnail_url VARCHAR(500),
+        order_index INTEGER DEFAULT 0,
+        status VARCHAR(50) DEFAULT 'active' CHECK (status IN ('active', 'inactive', 'draft')),
+        created_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+    await pool.query('CREATE INDEX idx_courses_status ON courses(status)');
+    await pool.query('CREATE INDEX idx_courses_order ON courses(order_index)');
+  } else {
+    // Table exists - check and add missing columns
+    const columnExists = await pool.query(`
+      SELECT EXISTS (
+        SELECT FROM information_schema.columns 
+        WHERE table_schema = 'public' 
+        AND table_name = 'courses' 
+        AND column_name = 'order_index'
+      );
+    `);
+    if (!columnExists.rows[0].exists) {
+      await pool.query('ALTER TABLE courses ADD COLUMN order_index INTEGER DEFAULT 0');
+      await pool.query('CREATE INDEX IF NOT EXISTS idx_courses_order ON courses(order_index)');
+    }
+  }
+
+  // Create menus table
+  const menusTableExists = await pool.query(`
+    SELECT EXISTS (
+      SELECT FROM information_schema.tables 
+      WHERE table_schema = 'public' 
+      AND table_name = 'menus'
+    );
+  `);
+  
+  if (!menusTableExists.rows[0].exists) {
+    await pool.query(`
+      CREATE TABLE menus (
+        id SERIAL PRIMARY KEY,
+        title VARCHAR(255) NOT NULL,
+        description TEXT,
+        thumbnail_url VARCHAR(500),
+        order_index INTEGER DEFAULT 0,
+        status VARCHAR(50) DEFAULT 'active' CHECK (status IN ('active', 'inactive', 'draft')),
+        created_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+    await pool.query('CREATE INDEX idx_menus_status ON menus(status)');
+    await pool.query('CREATE INDEX idx_menus_order ON menus(order_index)');
+  } else {
+    // Table exists - check and add missing columns
+    const columnExists = await pool.query(`
+      SELECT EXISTS (
+        SELECT FROM information_schema.columns 
+        WHERE table_schema = 'public' 
+        AND table_name = 'menus' 
+        AND column_name = 'order_index'
+      );
+    `);
+    if (!columnExists.rows[0].exists) {
+      await pool.query('ALTER TABLE menus ADD COLUMN order_index INTEGER DEFAULT 0');
+      await pool.query('CREATE INDEX IF NOT EXISTS idx_menus_order ON menus(order_index)');
+    }
+  }
+
+  // Create chapter_pages junction table (chapters contain pages in order)
+  const chapterPagesExists = await pool.query(`
+    SELECT EXISTS (
+      SELECT FROM information_schema.tables 
+      WHERE table_schema = 'public' 
+      AND table_name = 'chapter_pages'
+    );
+  `);
+  
+  if (!chapterPagesExists.rows[0].exists) {
+    await pool.query(`
+      CREATE TABLE chapter_pages (
+        id SERIAL PRIMARY KEY,
+        chapter_id INTEGER REFERENCES chapters(id) ON DELETE CASCADE,
+        page_id INTEGER REFERENCES pages(id) ON DELETE CASCADE,
+        order_index INTEGER DEFAULT 0,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(chapter_id, page_id)
+      );
+    `);
+    await pool.query('CREATE INDEX idx_chapter_pages_chapter ON chapter_pages(chapter_id)');
+    await pool.query('CREATE INDEX idx_chapter_pages_page ON chapter_pages(page_id)');
+    await pool.query('CREATE INDEX idx_chapter_pages_order ON chapter_pages(chapter_id, order_index)');
+  }
+
+  // Create course_chapters junction table (courses contain chapters in order)
+  const courseChaptersExists = await pool.query(`
+    SELECT EXISTS (
+      SELECT FROM information_schema.tables 
+      WHERE table_schema = 'public' 
+      AND table_name = 'course_chapters'
+    );
+  `);
+  
+  if (!courseChaptersExists.rows[0].exists) {
+    await pool.query(`
+      CREATE TABLE course_chapters (
+        id SERIAL PRIMARY KEY,
+        course_id INTEGER REFERENCES courses(id) ON DELETE CASCADE,
+        chapter_id INTEGER REFERENCES chapters(id) ON DELETE CASCADE,
+        order_index INTEGER DEFAULT 0,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(course_id, chapter_id)
+      );
+    `);
+    await pool.query('CREATE INDEX idx_course_chapters_course ON course_chapters(course_id)');
+    await pool.query('CREATE INDEX idx_course_chapters_chapter ON course_chapters(chapter_id)');
+    await pool.query('CREATE INDEX idx_course_chapters_order ON course_chapters(course_id, order_index)');
+  }
+
+  // Create menu_courses junction table (menus contain courses in order)
+  const menuCoursesExists = await pool.query(`
+    SELECT EXISTS (
+      SELECT FROM information_schema.tables 
+      WHERE table_schema = 'public' 
+      AND table_name = 'menu_courses'
+    );
+  `);
+  
+  if (!menuCoursesExists.rows[0].exists) {
+    await pool.query(`
+      CREATE TABLE menu_courses (
+        id SERIAL PRIMARY KEY,
+        menu_id INTEGER REFERENCES menus(id) ON DELETE CASCADE,
+        course_id INTEGER REFERENCES courses(id) ON DELETE CASCADE,
+        order_index INTEGER DEFAULT 0,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(menu_id, course_id)
+      );
+    `);
+    await pool.query('CREATE INDEX idx_menu_courses_menu ON menu_courses(menu_id)');
+    await pool.query('CREATE INDEX idx_menu_courses_course ON menu_courses(course_id)');
+    await pool.query('CREATE INDEX idx_menu_courses_order ON menu_courses(menu_id, order_index)');
+  }
+};
+
 const createUsersTable = async () => {
   // Check if users table exists
   const tableExists = await pool.query(`
@@ -274,7 +517,10 @@ const insertFeaturesData = async () => {
     { name: 'Features', icon: '⚙️', path: '/admin/features', description: 'Feature Management' },
     { name: 'Permissions', icon: '🔐', path: '/admin/permissions', description: 'Permission Management' },
     { name: 'Content Management', icon: '📄', path: '/admin/contents', description: 'Content Management (Video, File, Markdown, Image)' },
+    { name: 'Menus', icon: '📋', path: '/admin/menus', description: 'Menu Management' },
     { name: 'Courses', icon: '📚', path: '/admin/courses', description: 'Course Management' },
+    { name: 'Chapters', icon: '📑', path: '/admin/chapters', description: 'Chapter Management' },
+    { name: 'Pages', icon: '📄', path: '/admin/pages', description: 'Page Management' },
     { name: 'Lessons', icon: '📝', path: '/admin/lessons', description: 'Lesson Management' },
     { name: 'Payments', icon: '💳', path: '/admin/payments', description: 'Payment Management' },
     { name: 'Analytics', icon: '📈', path: '/admin/analytics', description: 'Analytics Dashboard' },
@@ -319,7 +565,7 @@ const insertPermissionsData = async () => {
   // SuperAdmin permissions - Full access to all admin features
   const superAdminFeatures = [
     'Dashboard', 'Users', 'Roles', 'Features', 'Permissions', 'Content Management',
-    'Courses', 'Lessons', 'Payments', 'Analytics', 'Settings'
+    'Menus', 'Courses', 'Chapters', 'Pages', 'Lessons', 'Payments', 'Analytics', 'Settings'
   ];
 
   for (const featureName of superAdminFeatures) {
@@ -418,6 +664,10 @@ async function migrate() {
     // Create contents table
     await createContentsTable();
     console.log('Contents table created');
+
+    // Create course management tables
+    await createCourseManagementTables();
+    console.log('Course management tables created');
 
     // Insert features data
     await insertFeaturesData();
