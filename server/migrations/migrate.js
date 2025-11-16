@@ -461,6 +461,52 @@ const createSubscriptionManagementTables = async () => {
   }
 };
 
+const createMembershipsTable = async () => {
+  const membershipsTableExists = await pool.query(`
+    SELECT EXISTS (
+      SELECT FROM information_schema.tables 
+      WHERE table_schema = 'public' 
+      AND table_name = 'memberships'
+    );
+  `);
+  
+  if (!membershipsTableExists.rows[0].exists) {
+    await pool.query(`
+      CREATE TABLE memberships (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER REFERENCES users(id) ON DELETE CASCADE NOT NULL,
+        package_id INTEGER REFERENCES packages(id) ON DELETE CASCADE NOT NULL,
+        payment_type VARCHAR(50) DEFAULT 'manual' CHECK (payment_type IN ('manual', 'razorpay')),
+        payment_status VARCHAR(50) DEFAULT 'pending' CHECK (payment_status IN ('pending', 'paid', 'failed', 'refunded')),
+        start_date DATE NOT NULL,
+        end_date DATE NOT NULL,
+        amount DECIMAL(10, 2) NOT NULL,
+        razorpay_order_id VARCHAR(255),
+        razorpay_payment_id VARCHAR(255),
+        status VARCHAR(50) DEFAULT 'pending' CHECK (status IN ('pending', 'active', 'expired', 'cancelled')),
+        created_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        CHECK (end_date >= start_date)
+      );
+    `);
+    await pool.query('CREATE INDEX idx_memberships_user_id ON memberships(user_id)');
+    await pool.query('CREATE INDEX idx_memberships_package_id ON memberships(package_id)');
+    await pool.query('CREATE INDEX idx_memberships_payment_status ON memberships(payment_status)');
+    await pool.query('CREATE INDEX idx_memberships_status ON memberships(status)');
+    await pool.query('CREATE INDEX idx_memberships_dates ON memberships(start_date, end_date)');
+    await pool.query('CREATE INDEX idx_memberships_razorpay_order ON memberships(razorpay_order_id)');
+  } else {
+    // Table exists - ensure indexes exist
+    await pool.query('CREATE INDEX IF NOT EXISTS idx_memberships_user_id ON memberships(user_id)');
+    await pool.query('CREATE INDEX IF NOT EXISTS idx_memberships_package_id ON memberships(package_id)');
+    await pool.query('CREATE INDEX IF NOT EXISTS idx_memberships_payment_status ON memberships(payment_status)');
+    await pool.query('CREATE INDEX IF NOT EXISTS idx_memberships_status ON memberships(status)');
+    await pool.query('CREATE INDEX IF NOT EXISTS idx_memberships_dates ON memberships(start_date, end_date)');
+    await pool.query('CREATE INDEX IF NOT EXISTS idx_memberships_razorpay_order ON memberships(razorpay_order_id)');
+  }
+};
+
 const createUsersTable = async () => {
   // Check if users table exists
   const tableExists = await pool.query(`
@@ -622,6 +668,7 @@ const insertFeaturesData = async () => {
     { name: 'Pages', icon: '📄', path: '/admin/pages', description: 'Page Management' },
     { name: 'Packages', icon: '📦', path: '/admin/packages', description: 'Package Management' },
     { name: 'Offers', icon: '🎁', path: '/admin/offers', description: 'Offer Management' },
+    { name: 'Memberships', icon: '🎫', path: '/admin/memberships', description: 'Membership Management' },
     { name: 'Lessons', icon: '📝', path: '/admin/lessons', description: 'Lesson Management' },
     { name: 'Payments', icon: '💳', path: '/admin/payments', description: 'Payment Management' },
     { name: 'Analytics', icon: '📈', path: '/admin/analytics', description: 'Analytics Dashboard' },
@@ -773,6 +820,10 @@ async function migrate() {
     // Create subscription management tables
     await createSubscriptionManagementTables();
     console.log('Subscription management tables created');
+
+    // Create memberships table
+    await createMembershipsTable();
+    console.log('Memberships table created');
 
     // Insert features data
     await insertFeaturesData();

@@ -21,6 +21,7 @@ import Courses from './pages/admin/Courses'
 import Menus from './pages/admin/Menus'
 import Packages from './pages/admin/Packages'
 import Offers from './pages/admin/Offers'
+import Memberships from './pages/admin/Memberships'
 import './App.css'
 
 function App() {
@@ -51,6 +52,7 @@ function App() {
             <Route path="menus" element={<Menus />} />
             <Route path="packages" element={<Packages />} />
             <Route path="offers" element={<Offers />} />
+            <Route path="memberships" element={<Memberships />} />
             <Route path="lessons" element={<Lessons />} />
             <Route path="payments" element={<Payments />} />
             <Route path="analytics" element={<Analytics />} />

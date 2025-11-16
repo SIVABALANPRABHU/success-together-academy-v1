@@ -564,6 +564,75 @@ class ApiService {
   async getOffersByPackage(packageId) {
     return this.request(`/offers/package/${packageId}`);
   }
+
+  // Memberships API methods
+  async getMemberships(filters = {}) {
+    const params = new URLSearchParams();
+    if (filters.search) params.append('search', filters.search);
+    if (filters.user_id) params.append('user_id', filters.user_id);
+    if (filters.package_id) params.append('package_id', filters.package_id);
+    if (filters.payment_type) params.append('payment_type', filters.payment_type);
+    if (filters.payment_status) params.append('payment_status', filters.payment_status);
+    if (filters.status) params.append('status', filters.status);
+    if (filters.limit) params.append('limit', filters.limit);
+    if (filters.offset) params.append('offset', filters.offset);
+
+    const queryString = params.toString();
+    const endpoint = `/memberships${queryString ? `?${queryString}` : ''}`;
+    return this.request(endpoint);
+  }
+
+  async getMembershipById(id) {
+    return this.request(`/memberships/${id}`);
+  }
+
+  async createMembership(membershipData) {
+    return this.request('/memberships', {
+      method: 'POST',
+      body: JSON.stringify(membershipData),
+    });
+  }
+
+  async updateMembership(id, membershipData) {
+    return this.request(`/memberships/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(membershipData),
+    });
+  }
+
+  async deleteMembership(id) {
+    return this.request(`/memberships/${id}`, {
+      method: 'DELETE',
+    });
+  }
+
+  async activateMembership(id) {
+    return this.request(`/memberships/${id}/activate`, {
+      method: 'PUT',
+    });
+  }
+
+  async getUserMemberships(userId) {
+    return this.request(`/memberships/user/${userId}`);
+  }
+
+  async getUserActiveMembership(userId) {
+    return this.request(`/memberships/user/${userId}/active`);
+  }
+
+  async createRazorpayOrder(orderData) {
+    return this.request('/memberships/razorpay/create-order', {
+      method: 'POST',
+      body: JSON.stringify(orderData),
+    });
+  }
+
+  async verifyRazorpayPayment(paymentData) {
+    return this.request('/memberships/razorpay/verify-payment', {
+      method: 'POST',
+      body: JSON.stringify(paymentData),
+    });
+  }
 }
 
 export default new ApiService();
