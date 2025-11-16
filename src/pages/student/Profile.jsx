@@ -1,9 +1,16 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import './Profile.css';
 
 const StudentProfile = () => {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate('/');
+  };
 
   return (
     <div className="student-profile">
@@ -37,6 +44,11 @@ const StudentProfile = () => {
             <span className="detail-label">Status:</span>
             <span className="detail-value">{user?.status || 'N/A'}</span>
           </div>
+        </div>
+        <div className="profile-actions">
+          <button className="logout-button" onClick={handleLogout}>
+            Logout
+          </button>
         </div>
       </div>
     </div>

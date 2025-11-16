@@ -36,12 +36,7 @@ const StudentLayout = () => {
             <h1>Success Together Academy</h1>
           </div>
           <div className="student-nav-menu">
-            <div className="student-user-info">
-              <span className="student-user-name">{user?.name || 'Student'}</span>
-              <button className="logout-btn" onClick={handleLogout}>
-                Logout
-              </button>
-            </div>
+            {/* User info and logout moved to sidebar profile */}
           </div>
         </div>
       </nav>

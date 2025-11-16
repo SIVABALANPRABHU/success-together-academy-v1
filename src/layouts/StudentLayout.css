@@ -60,34 +60,6 @@
   gap: 1rem;
 }
 
-.student-user-info {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-
-.student-user-name {
-  font-weight: 500;
-  color: var(--text-dark);
-}
-
-.logout-btn {
-  padding: 0.5rem 1.5rem;
-  background: var(--primary-color);
-  color: var(--white);
-  border: none;
-  border-radius: 8px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.logout-btn:hover {
-  background: var(--primary-dark);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow);
-}
-
 .student-layout-content {
   display: flex;
   flex: 1;
