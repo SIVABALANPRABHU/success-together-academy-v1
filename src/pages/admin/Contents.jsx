@@ -278,15 +278,6 @@ const Contents = () => {
       render: (value) => getSourceBadge(value),
     },
     {
-      key: 'content_url',
-      title: 'URL',
-      render: (value) => (
-        <a href={value} target="_blank" rel="noopener noreferrer" className="content-url-link">
-          {value.length > 30 ? `${value.substring(0, 30)}...` : value}
-        </a>
-      ),
-    },
-    {
       key: 'status',
       title: 'Status',
       render: (value) => getStatusBadge(value),
