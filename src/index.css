@@ -5,16 +5,57 @@
 }
 
 :root {
-  --primary-color: #6366f1;
-  --primary-dark: #4f46e5;
-  --secondary-color: #8b5cf6;
-  --text-dark: #1f2937;
-  --text-light: #6b7280;
-  --bg-light: #f9fafb;
-  --white: #ffffff;
-  --border-color: #e5e7eb;
+  /* Primary - Soft Indigo */
+  --primary-color: #4B5DFF;
+  --primary-dark: #3A4AE6;
+  --primary-light: #6B7AFF;
+  --primary-rgb: 75, 93, 255;
+  
+  /* Secondary - Sage Green */
+  --secondary-color: #9DB8A0;
+  --secondary-dark: #7FA084;
+  --secondary-light: #B8D0BB;
+  --secondary-rgb: 157, 184, 160;
+  
+  /* Accent - Blush Peach */
+  --accent-color: #F2B5A7;
+  --accent-dark: #E89A88;
+  --accent-light: #F5C9BE;
+  --accent-rgb: 242, 181, 167;
+  
+  /* Background - Warm Cream */
+  --bg-color: #F6F4F1;
+  --bg-light: #F6F4F1;
+  --bg-rgb: 246, 244, 241;
+  
+  /* Text - Charcoal */
+  --text-color: #2E2E2E;
+  --text-dark: #2E2E2E;
+  --text-light: #6B7280;
+  --text-muted: #9CA3AF;
+  
+  /* Neutral Colors */
+  --white: #FFFFFF;
+  --black: #000000;
+  --border-color: #E5E7EB;
+  
+  /* Status Colors */
+  --success-color: #10B981;
+  --error-color: #EF4444;
+  --warning-color: #F59E0B;
+  --info-color: #3B82F6;
+  
+  /* Shadows */
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
   --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
   --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  
+  /* Colored Shadows */
+  --shadow-primary: 0 4px 12px rgba(var(--primary-rgb), 0.2);
+  --shadow-accent: 0 4px 12px rgba(var(--accent-rgb), 0.3);
+  --shadow-secondary: 0 4px 12px rgba(var(--secondary-rgb), 0.2);
 }
 
 html {
@@ -22,15 +63,25 @@ html {
   -webkit-text-size-adjust: 100%;
 }
 
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Inter:wght@400;500;600&family=Nunito:wght@400;500;600&display=swap');
+
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  color: var(--text-dark);
+  color: var(--text-color);
   line-height: 1.6;
   overflow-x: hidden;
+  background-color: var(--bg-color);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--text-dark);
 }
 
 #root {
