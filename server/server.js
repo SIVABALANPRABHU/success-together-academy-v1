@@ -15,6 +15,9 @@ import menuRoutes from './routes/menus.js';
 import packageRoutes from './routes/packages.js';
 import offerRoutes from './routes/offers.js';
 import membershipRoutes from './routes/memberships.js';
+import questionRoutes from './routes/questions.js';
+import assessmentRoutes from './routes/assessments.js';
+import aiRoutes from './routes/ai.js';
 import pool from './config/database.js';
 
 dotenv.config();
@@ -65,6 +68,9 @@ app.use('/api/menus', menuRoutes);
 app.use('/api/packages', packageRoutes);
 app.use('/api/offers', offerRoutes);
 app.use('/api/memberships', membershipRoutes);
+app.use('/api/questions', questionRoutes);
+app.use('/api/assessments', assessmentRoutes);
+app.use('/api/ai', aiRoutes);
 
 // 404 handler
 app.use((req, res) => {

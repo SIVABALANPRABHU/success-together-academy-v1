@@ -91,7 +91,7 @@ const createContentsTable = async () => {
         id SERIAL PRIMARY KEY,
         title VARCHAR(255) NOT NULL,
         description TEXT,
-        content_type VARCHAR(50) NOT NULL CHECK (content_type IN ('video', 'file', 'markdown', 'image')),
+        content_type VARCHAR(50) NOT NULL CHECK (content_type IN ('video', 'file', 'markdown', 'image', 'assessment')),
         content_source VARCHAR(50) NOT NULL CHECK (content_source IN ('internal', 'external')),
         content_url TEXT NOT NULL,
         thumbnail_url VARCHAR(500),
@@ -110,12 +110,83 @@ const createContentsTable = async () => {
     await pool.query('CREATE INDEX idx_contents_created_by ON contents(created_by)');
     await pool.query('CREATE INDEX idx_contents_title ON contents(title)');
   } else {
-    // Table exists - ensure indexes exist
+    // Table exists - allow 'question' content_type if not already in constraint
+    const constraintRows = await pool.query(`
+      SELECT conname, pg_get_constraintdef(oid) as def FROM pg_constraint
+      WHERE conrelid = 'public.contents'::regclass AND contype = 'c'
+      AND pg_get_constraintdef(oid) LIKE '%content_type%'
+    `);
+    if (constraintRows.rows.length > 0 && !constraintRows.rows[0].def.includes('assessment')) {
+      for (const r of constraintRows.rows) {
+        await pool.query(`ALTER TABLE contents DROP CONSTRAINT IF EXISTS ${r.conname}`);
+      }
+      await pool.query(`ALTER TABLE contents ADD CONSTRAINT contents_content_type_check CHECK (content_type IN ('video', 'file', 'markdown', 'image', 'assessment'))`);
+    }
+    // Ensure indexes exist
     await pool.query('CREATE INDEX IF NOT EXISTS idx_contents_content_type ON contents(content_type)');
     await pool.query('CREATE INDEX IF NOT EXISTS idx_contents_content_source ON contents(content_source)');
     await pool.query('CREATE INDEX IF NOT EXISTS idx_contents_status ON contents(status)');
     await pool.query('CREATE INDEX IF NOT EXISTS idx_contents_created_by ON contents(created_by)');
     await pool.query('CREATE INDEX IF NOT EXISTS idx_contents_title ON contents(title)');
+  }
+};
+
+const createAssessmentTables = async () => {
+  const questionsExists = await pool.query(`
+    SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'questions');
+  `);
+  if (!questionsExists.rows[0].exists) {
+    await pool.query(`
+      CREATE TABLE questions (
+        id SERIAL PRIMARY KEY,
+        title VARCHAR(255),
+        question_type VARCHAR(50) NOT NULL CHECK (question_type IN ('single', 'multiple', 'fill_blank')),
+        question_text TEXT NOT NULL,
+        options JSONB,
+        correct_answers JSONB,
+        language VARCHAR(20) DEFAULT 'en',
+        created_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+    await pool.query('CREATE INDEX idx_questions_question_type ON questions(question_type)');
+    await pool.query('CREATE INDEX idx_questions_language ON questions(language)');
+    await pool.query('CREATE INDEX idx_questions_created_by ON questions(created_by)');
+  }
+
+  const assessmentsExists = await pool.query(`
+    SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'assessments');
+  `);
+  if (!assessmentsExists.rows[0].exists) {
+    await pool.query(`
+      CREATE TABLE assessments (
+        id SERIAL PRIMARY KEY,
+        content_id INTEGER UNIQUE REFERENCES contents(id) ON DELETE CASCADE,
+        title VARCHAR(255) NOT NULL,
+        description TEXT,
+        created_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+    await pool.query('CREATE INDEX idx_assessments_content_id ON assessments(content_id)');
+  }
+
+  const aqExists = await pool.query(`
+    SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'assessment_questions');
+  `);
+  if (!aqExists.rows[0].exists) {
+    await pool.query(`
+      CREATE TABLE assessment_questions (
+        assessment_id INTEGER NOT NULL REFERENCES assessments(id) ON DELETE CASCADE,
+        question_id INTEGER NOT NULL REFERENCES questions(id) ON DELETE CASCADE,
+        order_index INTEGER DEFAULT 0,
+        PRIMARY KEY (assessment_id, question_id)
+      );
+    `);
+    await pool.query('CREATE INDEX idx_assessment_questions_assessment_id ON assessment_questions(assessment_id)');
+    await pool.query('CREATE INDEX idx_assessment_questions_question_id ON assessment_questions(question_id)');
   }
 };
 
@@ -812,6 +883,10 @@ async function migrate() {
     // Create contents table
     await createContentsTable();
     console.log('Contents table created');
+
+    // Create assessment & question bank tables
+    await createAssessmentTables();
+    console.log('Assessment tables created');
 
     // Create course management tables
     await createCourseManagementTables();

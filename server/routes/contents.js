@@ -1,5 +1,6 @@
 import express from 'express';
 import Content from '../models/Content.js';
+import Assessment from '../models/Assessment.js';
 
 const router = express.Router();
 
@@ -94,10 +95,10 @@ router.post('/', async (req, res) => {
       });
     }
 
-    if (!content_type || !['video', 'file', 'markdown', 'image'].includes(content_type)) {
+    if (!content_type || !['video', 'file', 'markdown', 'image', 'assessment'].includes(content_type)) {
       return res.status(400).json({
         success: false,
-        message: 'Valid content_type is required (video, file, markdown, image)',
+        message: 'Valid content_type is required (video, file, markdown, image, assessment)',
       });
     }
 
@@ -108,7 +109,9 @@ router.post('/', async (req, res) => {
       });
     }
 
-    if (!content_url) {
+    const isAssessment = content_type === 'assessment';
+    const effectiveContentUrl = isAssessment ? (content_url || '#') : content_url;
+    if (!effectiveContentUrl) {
       return res.status(400).json({
         success: false,
         message: 'Content URL is required',
@@ -119,13 +122,22 @@ router.post('/', async (req, res) => {
       title,
       description,
       content_type,
-      content_source,
-      content_url,
+      content_source: content_type === 'assessment' ? 'internal' : content_source,
+      content_url: effectiveContentUrl,
       thumbnail_url,
       status: status || 'active',
       metadata,
       created_by,
     });
+
+    if (content_type === 'assessment') {
+      await Assessment.create({
+        content_id: content.id,
+        title: title,
+        description: description || null,
+        created_by: created_by || null,
+      });
+    }
 
     res.status(201).json({
       success: true,
@@ -167,10 +179,10 @@ router.put('/:id', async (req, res) => {
     }
 
     // Validate content_type if provided
-    if (content_type && !['video', 'file', 'markdown', 'image'].includes(content_type)) {
+    if (content_type && !['video', 'file', 'markdown', 'image', 'assessment'].includes(content_type)) {
       return res.status(400).json({
         success: false,
-        message: 'Valid content_type is required (video, file, markdown, image)',
+        message: 'Valid content_type is required (video, file, markdown, image, assessment)',
       });
     }
 
