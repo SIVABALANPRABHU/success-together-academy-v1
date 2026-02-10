@@ -2,6 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import apiService from '../../services/api';
+import { 
+  HiBookOpen, 
+  HiCheckCircle, 
+  HiAcademicCap, 
+  HiSparkles,
+  HiArrowRight,
+  HiTicket,
+  HiArrowTrendingUp
+} from 'react-icons/hi2';
 import './Dashboard.css';
 
 const Dashboard = () => {
@@ -97,12 +106,16 @@ const Dashboard = () => {
       {/* Hero Section */}
       <div className="dashboard-hero">
         <div className="hero-content">
-          <h1 className="hero-title">Welcome back, {user?.name || 'Student'}! 👋</h1>
+          <h1 className="hero-title">
+            Welcome back, <span className="hero-name">{user?.name?.split(' ')[0] || 'Student'}</span>!
+          </h1>
           <p className="hero-subtitle">Continue your learning journey and unlock new skills</p>
         </div>
         {activeMembership && (
           <div className="membership-card-hero">
-            <div className="membership-icon">🎫</div>
+            <div className="membership-icon">
+              <HiTicket />
+            </div>
             <div className="membership-info">
               <div className="membership-label">Active Membership</div>
               <div className="membership-date">
@@ -119,22 +132,28 @@ const Dashboard = () => {
 
       {/* Stats Section */}
       <div className="stats-grid">
-        <div className="stat-card">
-          <div className="stat-icon">📚</div>
+        <div className="stat-card" style={{ animationDelay: '0.1s' }}>
+          <div className="stat-icon stat-icon-primary">
+            <HiBookOpen />
+          </div>
           <div className="stat-content">
             <div className="stat-value">{stats.totalMenus}</div>
             <div className="stat-label">Total Menus</div>
           </div>
         </div>
-        <div className="stat-card">
-          <div className="stat-icon">✅</div>
+        <div className="stat-card" style={{ animationDelay: '0.2s' }}>
+          <div className="stat-icon stat-icon-secondary">
+            <HiCheckCircle />
+          </div>
           <div className="stat-content">
             <div className="stat-value">{stats.purchasedMenus}</div>
             <div className="stat-label">Purchased</div>
           </div>
         </div>
-        <div className="stat-card">
-          <div className="stat-icon">📖</div>
+        <div className="stat-card" style={{ animationDelay: '0.3s' }}>
+          <div className="stat-icon stat-icon-accent">
+            <HiArrowTrendingUp />
+          </div>
           <div className="stat-content">
             <div className="stat-value">{currentlyLearning ? 1 : 0}</div>
             <div className="stat-label">Currently Learning</div>
@@ -147,7 +166,7 @@ const Dashboard = () => {
         <section className="dashboard-section">
           <div className="section-header">
             <h2 className="section-title">
-              <span className="section-icon">🔥</span>
+              <HiSparkles className="section-icon" />
               Continue Learning
             </h2>
             <p className="section-subtitle">Pick up where you left off</p>
@@ -161,14 +180,16 @@ const Dashboard = () => {
               <div className="menu-card-content">
                 <div className="menu-card-header-featured">
                   <h3 className="menu-card-title-featured">{currentlyLearning.title}</h3>
-                  <span className="purchased-badge-featured">✓ Active</span>
+                  <span className="purchased-badge-featured">
+                    <HiCheckCircle /> Active
+                  </span>
                 </div>
                 {currentlyLearning.description && (
                   <p className="menu-card-description-featured">{currentlyLearning.description}</p>
                 )}
                 <div className="menu-card-footer">
                   <button className="continue-btn">
-                    Continue Learning →
+                    Continue Learning <HiArrowRight />
                   </button>
                 </div>
               </div>
@@ -182,7 +203,7 @@ const Dashboard = () => {
         <section className="dashboard-section">
           <div className="section-header">
             <h2 className="section-title">
-              <span className="section-icon">✅</span>
+              <HiCheckCircle className="section-icon" />
               My Purchased Menus
             </h2>
             <p className="section-subtitle">Your learning resources</p>
@@ -195,12 +216,14 @@ const Dashboard = () => {
                 onClick={() => handleMenuClick(menu.id)}
               >
                 <div className="menu-card-image">
-                  <div className="menu-card-icon">📚</div>
+                  <HiBookOpen className="menu-card-icon" />
                 </div>
                 <div className="menu-card-body">
                   <div className="menu-card-header-modern">
                     <h3 className="menu-card-title-modern">{menu.title}</h3>
-                    <span className="purchased-badge-modern">✓</span>
+                    <span className="purchased-badge-modern">
+                      <HiCheckCircle />
+                    </span>
                   </div>
                   {menu.description && (
                     <p className="menu-card-description-modern">
@@ -210,7 +233,9 @@ const Dashboard = () => {
                     </p>
                   )}
                   <div className="menu-card-action">
-                    <span className="view-text">View Courses →</span>
+                    <span className="view-text">
+                      View Courses <HiArrowRight />
+                    </span>
                   </div>
                 </div>
               </div>
@@ -223,29 +248,36 @@ const Dashboard = () => {
       <section className="dashboard-section">
         <div className="section-header">
           <h2 className="section-title">
-            <span className="section-icon">📚</span>
+            <HiAcademicCap className="section-icon" />
             All Available Menus
           </h2>
           <p className="section-subtitle">Explore our complete course catalog</p>
         </div>
         <div className="menus-grid">
-          {allMenus.map((menu) => {
+          {allMenus.map((menu, index) => {
             const isPurchased = purchasedMenus.some(pm => pm.id === menu.id);
             return (
               <div 
                 key={menu.id} 
                 className={`menu-card-modern ${isPurchased ? 'purchased' : ''}`}
                 onClick={() => handleMenuClick(menu.id)}
+                style={{ animationDelay: `${index * 0.05}s` }}
               >
                 <div className="menu-card-image">
-                  <div className="menu-card-icon">📚</div>
-                  {isPurchased && <div className="purchased-overlay">✓</div>}
+                  <HiBookOpen className="menu-card-icon" />
+                  {isPurchased && (
+                    <div className="purchased-overlay">
+                      <HiCheckCircle />
+                    </div>
+                  )}
                 </div>
                 <div className="menu-card-body">
                   <div className="menu-card-header-modern">
                     <h3 className="menu-card-title-modern">{menu.title}</h3>
                     {isPurchased && (
-                      <span className="purchased-badge-modern">✓</span>
+                      <span className="purchased-badge-modern">
+                        <HiCheckCircle />
+                      </span>
                     )}
                   </div>
                   {menu.description && (
@@ -257,7 +289,7 @@ const Dashboard = () => {
                   )}
                   <div className="menu-card-action">
                     <span className="view-text">
-                      {isPurchased ? 'Continue Learning →' : 'Explore →'}
+                      {isPurchased ? 'Continue Learning' : 'Explore'} <HiArrowRight />
                     </span>
                   </div>
                 </div>
