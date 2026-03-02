@@ -1,5 +1,6 @@
 import React from 'react';
 import { renderMarkdown } from '../../../utils/markdownRenderer';
+import AssessmentViewer from './AssessmentViewer';
 import './ContentPreview.css';
 
 const ContentPreview = ({ content }) => {
@@ -290,6 +291,13 @@ const ContentPreview = ({ content }) => {
                 </a>
               </div>
             </div>
+          </div>
+        );
+
+      case 'assessment':
+        return (
+          <div className="content-preview-assessment">
+            <AssessmentViewer content={content} />
           </div>
         );
 

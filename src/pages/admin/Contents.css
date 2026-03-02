@@ -257,6 +257,31 @@
   margin: 0.25rem 0;
 }
 
+.question-form-block {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1rem 0;
+  border-top: 1px solid #e5e7eb;
+}
+
+.question-option-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.question-option-row input[type="text"] {
+  flex: 1;
+}
+
+.question-option-row input[type="checkbox"] {
+  width: 1.25rem;
+  height: 1.25rem;
+  cursor: pointer;
+}
+
 @media (max-width: 768px) {
   .admin-contents-header {
     flex-direction: column;

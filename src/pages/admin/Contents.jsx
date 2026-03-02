@@ -7,6 +7,7 @@ import Modal from '../../components/common/Modal/Modal';
 import ContentPreview from '../../components/common/ContentPreview/ContentPreview';
 import FileUpload from '../../components/common/FileUpload/FileUpload';
 import MarkdownEditor from '../../components/common/MarkdownEditor/MarkdownEditor';
+import ManageAssessmentModal from './ManageAssessmentModal';
 import apiService from '../../services/api';
 import { usePermissions } from '../../hooks/usePermissions';
 import './Contents.css';
@@ -34,6 +35,8 @@ const Contents = () => {
   });
   const [error, setError] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [assessmentModalContentId, setAssessmentModalContentId] = useState(null);
+  const [assessmentModalTitle, setAssessmentModalTitle] = useState('');
   const { hasPermission } = usePermissions();
 
   useEffect(() => {
@@ -74,15 +77,21 @@ const Contents = () => {
       setIsSubmitting(true);
       setError(null);
 
-      if (!formData.title || !formData.content_url) {
+      const isAssessment = formData.content_type === 'assessment';
+      if (isAssessment) {
+        if (!formData.title?.trim()) {
+          setError('Title is required');
+          setIsSubmitting(false);
+          return;
+        }
+      } else if (!formData.title || !formData.content_url) {
         setError('Title and Content URL are required');
         setIsSubmitting(false);
         return;
       }
 
-      // Validate and parse metadata JSON
       let parsedMetadata = null;
-      if (formData.metadata && formData.metadata.trim()) {
+      if (!isAssessment && formData.metadata && formData.metadata.trim()) {
         try {
           parsedMetadata = JSON.parse(formData.metadata);
         } catch (e) {
@@ -94,7 +103,9 @@ const Contents = () => {
 
       const contentData = {
         ...formData,
-        metadata: parsedMetadata,
+        content_url: isAssessment ? '#' : formData.content_url,
+        content_source: isAssessment ? 'internal' : formData.content_source,
+        metadata: isAssessment ? null : parsedMetadata,
       };
 
       await apiService.createContent(contentData);
@@ -115,15 +126,21 @@ const Contents = () => {
       setIsSubmitting(true);
       setError(null);
 
-      if (!formData.title || !formData.content_url) {
+      const isAssessment = formData.content_type === 'assessment';
+      if (isAssessment) {
+        if (!formData.title?.trim()) {
+          setError('Title is required');
+          setIsSubmitting(false);
+          return;
+        }
+      } else if (!formData.title || !formData.content_url) {
         setError('Title and Content URL are required');
         setIsSubmitting(false);
         return;
       }
 
-      // Validate and parse metadata JSON
       let parsedMetadata = null;
-      if (formData.metadata && formData.metadata.trim()) {
+      if (!isAssessment && formData.metadata && formData.metadata.trim()) {
         try {
           parsedMetadata = JSON.parse(formData.metadata);
         } catch (e) {
@@ -135,7 +152,9 @@ const Contents = () => {
 
       const contentData = {
         ...formData,
-        metadata: parsedMetadata,
+        content_url: isAssessment ? '#' : formData.content_url,
+        content_source: isAssessment ? 'internal' : formData.content_source,
+        metadata: isAssessment ? null : parsedMetadata,
       };
 
       await apiService.updateContent(selectedContent.id, contentData);
@@ -170,18 +189,17 @@ const Contents = () => {
 
   const handleEditContent = (content) => {
     setSelectedContent(content);
+    const isAssessment = content.content_type === 'assessment';
     setFormData({
       title: content.title || '',
       description: content.description || '',
       content_type: content.content_type || 'video',
-      content_source: content.content_source || 'external',
-      content_url: content.content_url || '',
+      content_source: isAssessment ? 'internal' : (content.content_source || 'external'),
+      content_url: isAssessment ? '#' : (content.content_url || ''),
       thumbnail_url: content.thumbnail_url || '',
       status: content.status || 'active',
-      metadata: content.metadata 
-        ? (typeof content.metadata === 'string' 
-            ? content.metadata 
-            : JSON.stringify(content.metadata, null, 2))
+      metadata: !isAssessment && content.metadata
+        ? (typeof content.metadata === 'string' ? content.metadata : JSON.stringify(content.metadata, null, 2))
         : '',
     });
     setIsModalOpen(true);
@@ -223,6 +241,7 @@ const Contents = () => {
       file: '📄',
       markdown: '📝',
       image: '🖼️',
+      assessment: '📋',
     };
     return icons[type] || '📄';
   };
@@ -293,6 +312,18 @@ const Contents = () => {
       align: 'right',
       render: (_, row) => (
         <div className="table-actions">
+          {row.content_type === 'assessment' && hasPermission('/admin/contents', 'edit') && (
+            <Button
+              variant="primary"
+              size="small"
+              onClick={() => {
+                setAssessmentModalContentId(row.id);
+                setAssessmentModalTitle(row.title);
+              }}
+            >
+              Manage questions
+            </Button>
+          )}
           <Button
             variant="ghost"
             size="small"
@@ -367,6 +398,7 @@ const Contents = () => {
                 <option value="file">File</option>
                 <option value="markdown">Markdown</option>
                 <option value="image">Image</option>
+                <option value="assessment">Assessment</option>
               </select>
             </div>
             <div className="filter-item">
@@ -464,9 +496,10 @@ const Contents = () => {
                 value={formData.content_type}
                 onChange={(e) => {
                   const newType = e.target.value;
-                  // Markdown is always internal
                   if (newType === 'markdown') {
                     setFormData({ ...formData, content_type: newType, content_source: 'internal', content_url: '' });
+                  } else if (newType === 'assessment') {
+                    setFormData({ ...formData, content_type: newType, content_source: 'internal', content_url: '#' });
                   } else {
                     setFormData({ ...formData, content_type: newType });
                   }
@@ -478,6 +511,7 @@ const Contents = () => {
                 <option value="file">File (PDF, PPT, Word)</option>
                 <option value="markdown">Markdown (Internal Only)</option>
                 <option value="image">Image</option>
+                <option value="assessment">Assessment (quiz with questions)</option>
               </select>
             </div>
             <div className="input-wrapper">
@@ -488,21 +522,45 @@ const Contents = () => {
                 className="input"
                 value={formData.content_source}
                 onChange={(e) => setFormData({ ...formData, content_source: e.target.value })}
-                disabled={isSubmitting || formData.content_type === 'markdown'}
+                disabled={isSubmitting || formData.content_type === 'markdown' || formData.content_type === 'assessment'}
                 required
               >
                 <option value="internal">Internal</option>
                 <option value="external">External</option>
               </select>
-              {formData.content_type === 'markdown' && (
+{formData.content_type === 'markdown' && (
                 <span className="input-helper" style={{ color: '#6b7280', fontSize: '0.75rem', marginTop: '0.25rem', display: 'block' }}>
                   Markdown is internal only
                 </span>
               )}
-            </div>
+              {formData.content_type === 'assessment' && (
+                <span className="input-helper" style={{ color: '#6b7280', fontSize: '0.75rem', marginTop: '0.25rem', display: 'block' }}>
+                  After saving, use &quot;Manage questions&quot; to add questions to this assessment.
+                </span>
+              )}
           </div>
-          
-          {formData.content_type === 'markdown' ? (
+          </div>
+
+          {formData.content_type === 'assessment' ? (
+            <div className="assessment-form-note">
+              <p>Assessment content. Save then click &quot;Manage questions&quot; from the list to add or reuse questions (single/multiple/fill-in and AI generation).</p>
+              <div className="form-row">
+                <div className="input-wrapper">
+                  <label className="input-label">Status</label>
+                  <select
+                    className="input"
+                    value={formData.status}
+                    onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                    disabled={isSubmitting}
+                  >
+                    <option value="active">Active</option>
+                    <option value="inactive">Inactive</option>
+                    <option value="draft">Draft</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          ) : formData.content_type === 'markdown' ? (
             // Markdown is internal only
             <div className="input-wrapper input-wrapper--full-width">
               <label className="input-label">
@@ -626,20 +684,20 @@ const Contents = () => {
               </select>
             </div>
           </div>
-          <div className="input-wrapper input-wrapper--full-width">
-            <label className="input-label">
-              Metadata (JSON, Optional)
-            </label>
-            <textarea
-              className="input textarea"
-              placeholder='{"key": "value"}'
-              value={formData.metadata}
-              onChange={(e) => setFormData({ ...formData, metadata: e.target.value })}
-              rows={4}
-              disabled={isSubmitting}
-            />
-            <span className="input-helper">Enter valid JSON for additional metadata</span>
-          </div>
+          {formData.content_type !== 'assessment' && (
+            <div className="input-wrapper input-wrapper--full-width">
+              <label className="input-label">Metadata (JSON, Optional)</label>
+              <textarea
+                className="input textarea"
+                placeholder='{"key": "value"}'
+                value={formData.metadata}
+                onChange={(e) => setFormData({ ...formData, metadata: e.target.value })}
+                rows={4}
+                disabled={isSubmitting}
+              />
+              <span className="input-helper">Enter valid JSON for additional metadata</span>
+            </div>
+          )}
         </div>
       </Modal>
 
@@ -660,7 +718,7 @@ const Contents = () => {
             }}>
               Close
             </Button>
-            {previewContent && (
+            {previewContent && previewContent.content_url && previewContent.content_url !== '#' && (
               <Button
                 variant="primary"
                 onClick={() => {
@@ -688,6 +746,13 @@ const Contents = () => {
           </div>
         )}
       </Modal>
+
+      <ManageAssessmentModal
+        isOpen={!!assessmentModalContentId}
+        onClose={() => { setAssessmentModalContentId(null); setAssessmentModalTitle(''); }}
+        contentId={assessmentModalContentId}
+        contentTitle={assessmentModalTitle}
+      />
     </div>
   );
 };

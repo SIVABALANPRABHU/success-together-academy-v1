@@ -218,6 +218,85 @@ class ApiService {
     });
   }
 
+  // Questions (question bank)
+  async getQuestions(filters = {}) {
+    const params = new URLSearchParams();
+    if (filters.search) params.append('search', filters.search);
+    if (filters.question_type) params.append('question_type', filters.question_type);
+    if (filters.language) params.append('language', filters.language);
+    if (filters.limit) params.append('limit', filters.limit);
+    if (filters.offset) params.append('offset', filters.offset);
+    const q = params.toString();
+    return this.request(`/questions${q ? `?${q}` : ''}`);
+  }
+
+  async getQuestionById(id) {
+    return this.request(`/questions/${id}`);
+  }
+
+  async createQuestion(data) {
+    return this.request('/questions', { method: 'POST', body: JSON.stringify(data) });
+  }
+
+  async updateQuestion(id, data) {
+    return this.request(`/questions/${id}`, { method: 'PUT', body: JSON.stringify(data) });
+  }
+
+  async deleteQuestion(id) {
+    return this.request(`/questions/${id}`, { method: 'DELETE' });
+  }
+
+  // Assessments
+  async getAssessments(filters = {}) {
+    const params = new URLSearchParams();
+    if (filters.search) params.append('search', filters.search);
+    if (filters.limit) params.append('limit', filters.limit);
+    if (filters.offset) params.append('offset', filters.offset);
+    const q = params.toString();
+    return this.request(`/assessments${q ? `?${q}` : ''}`);
+  }
+
+  async getAssessmentById(id) {
+    return this.request(`/assessments/${id}`);
+  }
+
+  async getAssessmentByContentId(contentId) {
+    return this.request(`/assessments/by-content/${contentId}`);
+  }
+
+  async createAssessment(data) {
+    return this.request('/assessments', { method: 'POST', body: JSON.stringify(data) });
+  }
+
+  async updateAssessment(id, data) {
+    return this.request(`/assessments/${id}`, { method: 'PUT', body: JSON.stringify(data) });
+  }
+
+  async addQuestionToAssessment(assessmentId, questionId, orderIndex = 0) {
+    return this.request(`/assessments/${assessmentId}/questions`, {
+      method: 'POST',
+      body: JSON.stringify({ question_id: questionId, order_index: orderIndex }),
+    });
+  }
+
+  async removeQuestionFromAssessment(assessmentId, questionId) {
+    return this.request(`/assessments/${assessmentId}/questions/${questionId}`, { method: 'DELETE' });
+  }
+
+  async reorderAssessmentQuestions(assessmentId, questionIds) {
+    return this.request(`/assessments/${assessmentId}/questions/order`, {
+      method: 'PUT',
+      body: JSON.stringify({ question_ids: questionIds }),
+    });
+  }
+
+  async generateQuestionsWithAI(content, language = 'en', count = 5) {
+    return this.request('/ai/generate-questions', {
+      method: 'POST',
+      body: JSON.stringify({ content, language, count }),
+    });
+  }
+
   // Pages API methods
   async getPages(filters = {}) {
     const params = new URLSearchParams();

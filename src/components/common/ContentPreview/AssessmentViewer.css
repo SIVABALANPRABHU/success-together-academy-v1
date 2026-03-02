@@ -1,0 +1,55 @@
+.assessment-viewer {
+  padding: 1rem 0;
+}
+
+.assessment-viewer-loading,
+.assessment-viewer-error {
+  padding: 1.5rem;
+  text-align: center;
+  color: #6b7280;
+}
+
+.assessment-viewer-error {
+  color: #b91c1c;
+  background: #fef2f2;
+  border-radius: 0.5rem;
+}
+
+.assessment-viewer-title {
+  font-size: 1.25rem;
+  margin: 0 0 0.5rem 0;
+  color: var(--text-dark, #2e2e2e);
+}
+
+.assessment-viewer-description {
+  font-size: 0.9rem;
+  color: var(--text-light, #6b7280);
+  margin: 0 0 1.25rem 0;
+}
+
+.assessment-viewer-empty {
+  color: var(--text-muted, #9ca3af);
+  font-style: italic;
+  margin: 0;
+}
+
+.assessment-viewer-questions {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.assessment-viewer-question-block {
+  padding: 1rem;
+  border: 1px solid var(--border-color, #e5e7eb);
+  border-radius: 0.75rem;
+  background: var(--bg-color, #f9fafb);
+}
+
+.assessment-viewer-question-num {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--primary-color, #4b5dff);
+  margin-bottom: 0.5rem;
+}

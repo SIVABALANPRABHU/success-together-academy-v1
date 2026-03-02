@@ -31,6 +31,11 @@ npm run dev
 
 3. Open your browser and navigate to `http://localhost:5173`
 
+### Run React in dev mode (frontend only)
+
+- **From project root:** `npm install` then `npm run dev` — React (Vite) dev server runs at **http://localhost:5173** with hot reload.
+- For full stack (API + DB), use Docker: `docker-compose -f docker-compose.dev.yml up --build`.
+
 ### Build for Production
 
 ```bash
