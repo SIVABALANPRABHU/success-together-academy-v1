@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import Lenis from 'lenis'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import { Link } from 'react-router-dom'
 import '../styles/Home.css'
 
 // Register GSAP ScrollTrigger
@@ -188,14 +189,12 @@ const Home = () => {
 
   // Lenis & GSAP Integration Effect
   useEffect(() => {
-    // 1. Initialize Lenis smooth scroll
     const lenis = new Lenis({
       duration: 1.2,
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
       smoothWheel: true,
     })
 
-    // Connect Lenis to ScrollTrigger
     lenis.on('scroll', ScrollTrigger.update)
 
     const updateLenis = (time) => {
@@ -204,7 +203,7 @@ const Home = () => {
     gsap.ticker.add(updateLenis)
     gsap.ticker.lagSmoothing(0)
 
-    // 2. GSAP Animations: Hero load sequence
+    // GSAP Animations: Hero load sequence
     const heroTl = gsap.timeline()
     heroTl.fromTo('.hero-content .badge', { opacity: 0, y: -20 }, { opacity: 1, y: 0, duration: 0.6 })
       .fromTo('.hero-content .goal-switch-container', { opacity: 0, y: -15 }, { opacity: 1, y: 0, duration: 0.4 }, '-=0.3')
@@ -218,7 +217,7 @@ const Home = () => {
       { opacity: 1, scale: 1, rotate: 0, duration: 1.2, ease: 'back.out(1.5)', delay: 0.2 }
     )
 
-    // 3. GSAP Animations: Scroll Trigger sections
+    // GSAP Animations: Scroll Trigger sections
     const sections = ['#syllabus-tool', '#score-tool', '#features', '#testimonials', '#enroll']
     sections.forEach((selector) => {
       const sectionEl = document.querySelector(selector)
@@ -304,7 +303,6 @@ const Home = () => {
       }
     })
 
-    // Clean up on unmount
     return () => {
       lenis.destroy()
       gsap.ticker.remove(updateLenis)
@@ -327,8 +325,8 @@ const Home = () => {
             <a href="#score-tool" className="nav-link" onClick={closeMenu}>Calculator</a>
             <a href="#features" className="nav-link" onClick={closeMenu}>Features</a>
             <a href="#testimonials" className="nav-link" onClick={closeMenu}>Stories</a>
-            <button className="nav-button login" onClick={closeMenu}>Login</button>
-            <button className="nav-button primary signup" onClick={closeMenu}>Enroll</button>
+            <Link to="/login" className="nav-button login text-decoration-none" onClick={closeMenu}>Login</Link>
+            <Link to="/register" className="nav-button primary signup text-decoration-none" onClick={closeMenu}>Enroll</Link>
           </div>
           <div className={`nav-toggle ${isMenuOpen ? 'active' : ''}`} onClick={() => setIsMenuOpen(!isMenuOpen)}>
             <span></span>
@@ -383,7 +381,7 @@ const Home = () => {
             )}
 
             <div className="hero-buttons">
-              <a href="#enroll" className="btn btn-primary gold-glow-animation">Begin Free Trial</a>
+              <Link to="/register" className="btn btn-primary gold-glow-animation">Begin Free Trial</Link>
               <a href="#syllabus-tool" className="btn btn-secondary">Explore Syllabus Tracker</a>
             </div>
             
@@ -682,7 +680,7 @@ const Home = () => {
         <div className="container">
           <h2>Ready to Begin Your IAS/IPS Journey?</h2>
           <p>Join India's most rigorous academy. Start for free and get access to 3 free Answer Sheet evaluations and 2 Prelims Full Mock Tests.</p>
-          <button className="btn btn-primary large gold-glow-animation">Secure Your Free Trial Session</button>
+          <Link to="/register" className="btn btn-primary large gold-glow-animation">Secure Your Free Trial Session</Link>
         </div>
       </section>
 
