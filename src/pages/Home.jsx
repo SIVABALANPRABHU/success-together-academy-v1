@@ -1,5 +1,11 @@
 import { useState, useEffect } from 'react'
+import Lenis from 'lenis'
+import { gsap } from 'gsap'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import '../styles/Home.css'
+
+// Register GSAP ScrollTrigger
+gsap.registerPlugin(ScrollTrigger)
 
 const Home = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -8,7 +14,7 @@ const Home = () => {
   // Hero interactive Goal toggle: 'ias' or 'ips'
   const [goalMode, setGoalMode] = useState('ias')
 
-  // Interactive Syllabus Tracker State (with detailed micro-topics for 'How it works')
+  // Interactive Syllabus Tracker State
   const [activeSyllabusTab, setActiveSyllabusTab] = useState('prelims')
   const [expandedSubject, setExpandedSubject] = useState('p1') // ID of expanded subject
 
@@ -159,7 +165,7 @@ const Home = () => {
   }
 
   const toggleSyllabusItem = (type, id, e) => {
-    e.stopPropagation() // Prevent toggling expansion
+    e.stopPropagation()
     setSyllabus(prev => ({
       ...prev,
       [type]: prev[type].map(item =>
@@ -180,25 +186,129 @@ const Home = () => {
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
+  // Lenis & GSAP Integration Effect
   useEffect(() => {
-    const observerOptions = {
-      threshold: 0.15,
-      rootMargin: '0px 0px -50px 0px'
+    // 1. Initialize Lenis smooth scroll
+    const lenis = new Lenis({
+      duration: 1.2,
+      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      smoothWheel: true,
+    })
+
+    // Connect Lenis to ScrollTrigger
+    lenis.on('scroll', ScrollTrigger.update)
+
+    const updateLenis = (time) => {
+      lenis.raf(time * 1000)
     }
+    gsap.ticker.add(updateLenis)
+    gsap.ticker.lagSmoothing(0)
 
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('in-view')
+    // 2. GSAP Animations: Hero load sequence
+    const heroTl = gsap.timeline()
+    heroTl.fromTo('.hero-content .badge', { opacity: 0, y: -20 }, { opacity: 1, y: 0, duration: 0.6 })
+      .fromTo('.hero-content .goal-switch-container', { opacity: 0, y: -15 }, { opacity: 1, y: 0, duration: 0.4 }, '-=0.3')
+      .fromTo('.hero-content .hero-title', { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.6 }, '-=0.2')
+      .fromTo('.hero-content .hero-subtitle', { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.6 }, '-=0.3')
+      .fromTo('.hero-content .hero-buttons', { opacity: 0, y: 15 }, { opacity: 1, y: 0, duration: 0.5 }, '-=0.3')
+      .fromTo('.hero-content .hero-stats', { opacity: 0, y: 15 }, { opacity: 1, y: 0, duration: 0.5 }, '-=0.3')
+
+    gsap.fromTo('.academy-crest-box', 
+      { opacity: 0, scale: 0.75, rotate: -5 },
+      { opacity: 1, scale: 1, rotate: 0, duration: 1.2, ease: 'back.out(1.5)', delay: 0.2 }
+    )
+
+    // 3. GSAP Animations: Scroll Trigger sections
+    const sections = ['#syllabus-tool', '#score-tool', '#features', '#testimonials', '#enroll']
+    sections.forEach((selector) => {
+      const sectionEl = document.querySelector(selector)
+      if (!sectionEl) return
+
+      // Animate section headers
+      gsap.fromTo(sectionEl.querySelectorAll('.section-title, .section-subtitle'),
+        { opacity: 0, y: 30 },
+        {
+          opacity: 1,
+          y: 0,
+          duration: 0.8,
+          stagger: 0.15,
+          scrollTrigger: {
+            trigger: sectionEl,
+            start: 'top 75%',
+            toggleActions: 'play none none none'
+          }
         }
-      })
-    }, observerOptions)
+      )
 
-    const animatedElements = document.querySelectorAll('.animate-on-scroll')
-    animatedElements.forEach((el) => observer.observe(el))
+      // Animate unique section content
+      if (selector === '#syllabus-tool') {
+        gsap.fromTo(sectionEl.querySelectorAll('.tracker-explanation-card, .syllabus-tabs-container, .single-tracker-container'),
+          { opacity: 0, y: 40 },
+          {
+            opacity: 1,
+            y: 0,
+            duration: 0.8,
+            stagger: 0.2,
+            scrollTrigger: {
+              trigger: sectionEl,
+              start: 'top 70%',
+              toggleActions: 'play none none none'
+            }
+          }
+        )
+      } else if (selector === '#score-tool') {
+        gsap.fromTo(sectionEl.querySelector('.calculator-box'),
+          { opacity: 0, scale: 0.95, y: 40 },
+          {
+            opacity: 1,
+            scale: 1,
+            y: 0,
+            duration: 0.8,
+            scrollTrigger: {
+              trigger: sectionEl,
+              start: 'top 70%',
+              toggleActions: 'play none none none'
+            }
+          }
+        )
+      } else if (selector === '#features') {
+        gsap.fromTo(sectionEl.querySelectorAll('.feature-card'),
+          { opacity: 0, y: 30 },
+          {
+            opacity: 1,
+            y: 0,
+            duration: 0.7,
+            stagger: 0.12,
+            scrollTrigger: {
+              trigger: sectionEl,
+              start: 'top 70%',
+              toggleActions: 'play none none none'
+            }
+          }
+        )
+      } else if (selector === '#testimonials') {
+        gsap.fromTo(sectionEl.querySelectorAll('.testimonial-card'),
+          { opacity: 0, x: (i) => i === 0 ? -40 : 40 },
+          {
+            opacity: 1,
+            x: 0,
+            duration: 0.8,
+            stagger: 0.2,
+            scrollTrigger: {
+              trigger: sectionEl,
+              start: 'top 70%',
+              toggleActions: 'play none none none'
+            }
+          }
+        )
+      }
+    })
 
+    // Clean up on unmount
     return () => {
-      animatedElements.forEach((el) => observer.unobserve(el))
+      lenis.destroy()
+      gsap.ticker.remove(updateLenis)
+      ScrollTrigger.getAll().forEach(t => t.kill())
     }
   }, [])
 
@@ -231,12 +341,12 @@ const Home = () => {
       {/* Hero Section */}
       <section className="hero-section" id="home">
         <div className="hero-grid">
-          <div className="hero-content animate-on-scroll">
+          <div className="hero-content">
             <div className="badge">
               <span className="saffron-dot"></span> UPSC Civil Services Academy
             </div>
 
-            {/* Interactive Goal Mode Toggle Buttons */}
+            {/* Goal Switch */}
             <div className="goal-switch-container">
               <button 
                 className={`goal-switch-btn ${goalMode === 'ias' ? 'active' : ''}`}
@@ -293,7 +403,7 @@ const Home = () => {
             </div>
           </div>
           
-          <div className="hero-image-pane animate-on-scroll">
+          <div className="hero-image-pane">
             <div className="academy-crest-box">
               <div className="gold-orbit-1"></div>
               <div className="gold-orbit-2"></div>
@@ -322,15 +432,14 @@ const Home = () => {
       {/* Interactive UPSC Syllabus Tracker Section */}
       <section className="interactive-section" id="syllabus-tool">
         <div className="container">
-          <div className="section-header text-center animate-on-scroll">
+          <div className="section-header text-center">
             <h2 className="section-title">UPSC Smart Syllabus Tracker</h2>
             <p className="section-subtitle">
               Don't just check off subjects. Expand each module to see how our tracker maps daily lessons, reference materials, and evaluation results straight to the UPSC curriculum.
             </p>
           </div>
 
-          {/* Interactive Syllabus Explanation Card */}
-          <div className="tracker-explanation-card animate-on-scroll">
+          <div className="tracker-explanation-card">
             <div className="explanation-header">
               <span className="ex-icon">💡</span>
               <h4>How This Tracker Works</h4>
@@ -340,7 +449,7 @@ const Home = () => {
             </p>
           </div>
 
-          <div className="syllabus-tabs-container animate-on-scroll">
+          <div className="syllabus-tabs-container">
             <button 
               className={`syllabus-tab-btn ${activeSyllabusTab === 'prelims' ? 'active' : ''}`}
               onClick={() => setActiveSyllabusTab('prelims')}
@@ -355,7 +464,7 @@ const Home = () => {
             </button>
           </div>
 
-          <div className="single-tracker-container animate-on-scroll">
+          <div className="single-tracker-container">
             <div className="tracker-card-header">
               <h3>{activeSyllabusTab === 'prelims' ? 'GS Paper I Syllabus Modules' : 'Mains GS & Essay Modules'}</h3>
               <span className={`progress-badge ${activeSyllabusTab === 'prelims' ? 'gold' : 'saffron'}`}>
@@ -387,7 +496,7 @@ const Home = () => {
                   </div>
 
                   {expandedSubject === item.id && (
-                    <div className="resource-map-panel animate-slide-down">
+                    <div className="resource-map-panel">
                       <h5>Mapped Ecosystem Resources:</h5>
                       <div className="resources-grid">
                         <div className="resource-col">
@@ -419,14 +528,14 @@ const Home = () => {
       {/* Interactive Mock Test Score Analyzer Section */}
       <section className="interactive-section alt-bg" id="score-tool">
         <div className="container">
-          <div className="section-header text-center animate-on-scroll">
+          <div className="section-header text-center">
             <h2 className="section-title">UPSC Prelims Mock Score Analyzer</h2>
             <p className="section-subtitle">
               Estimate your GS Paper-I marks based on UPSC mark patterns (+2.00 for Correct, -0.66 for Incorrect).
             </p>
           </div>
 
-          <div className="calculator-box animate-on-scroll">
+          <div className="calculator-box">
             <div className="calculator-controls">
               <div className="slider-group">
                 <div className="slider-label">
@@ -503,29 +612,29 @@ const Home = () => {
       {/* Features Section */}
       <section className="features-section" id="features">
         <div className="container">
-          <div className="section-header text-center animate-on-scroll">
+          <div className="section-header text-center">
             <h2 className="section-title">Our Premium UPSC Ecosystem</h2>
             <p className="section-subtitle">
               We provide tools, evaluations, and strategies that mimic the actual UPSC exam standards.
             </p>
           </div>
           <div className="features-grid">
-            <div className="feature-card animate-on-scroll">
+            <div className="feature-card">
               <div className="feature-icon">🛡</div>
               <h3>1-on-1 Bureaucrat Mentorship</h3>
               <p>Get guided by sitting IAS, IPS, and IFS officers who have successfully crossed the threshold.</p>
             </div>
-            <div className="feature-card animate-on-scroll">
+            <div className="feature-card">
               <div className="feature-icon">✍</div>
               <h3>Real-time Answer Evaluation</h3>
               <p>Upload your Mains GS answers and essays for assessment by our senior subject matter experts.</p>
             </div>
-            <div className="feature-card animate-on-scroll">
+            <div className="feature-card">
               <div className="feature-icon">📰</div>
               <h3>Daily UPSC-Centric Current Affairs</h3>
               <p>Save hours of reading with distilled Newspaper Analysis and PIB briefs curated daily.</p>
             </div>
-            <div className="feature-card animate-on-scroll">
+            <div className="feature-card">
               <div className="feature-icon">🎯</div>
               <h3>Intelligent Performance Heatmap</h3>
               <p>Identify weak sections in Polity, History, or CSAT with our comprehensive micro-level analysis.</p>
@@ -537,13 +646,13 @@ const Home = () => {
       {/* Testimonials Section */}
       <section className="testimonials-section" id="testimonials">
         <div className="container">
-          <div className="section-header text-center animate-on-scroll">
+          <div className="section-header text-center">
             <h2 className="section-title">Hall of Fame</h2>
             <p className="section-subtitle">Read how Success Together Academy paved the way for successful ranks.</p>
           </div>
 
           <div className="testimonials-grid">
-            <div className="testimonial-card animate-on-scroll">
+            <div className="testimonial-card">
               <p className="quote">"The mock test analyzer and detailed feedback on General Studies answer sheets completely restructured my strategy. I went from failing Prelims to securing a double-digit Rank."</p>
               <div className="officer-meta">
                 <div className="avatar">🇮🇳</div>
@@ -554,7 +663,7 @@ const Home = () => {
               </div>
             </div>
 
-            <div className="testimonial-card animate-on-scroll">
+            <div className="testimonial-card">
               <p className="quote">"Syllabus tracking combined with consistent current affairs briefs kept me focused. The IPS mentorship program taught me what to leave out, which is as critical as what to study."</p>
               <div className="officer-meta">
                 <div className="avatar">🇮🇳</div>
@@ -570,7 +679,7 @@ const Home = () => {
 
       {/* Call to Action Section */}
       <section className="cta-section" id="enroll">
-        <div className="container animate-on-scroll">
+        <div className="container">
           <h2>Ready to Begin Your IAS/IPS Journey?</h2>
           <p>Join India's most rigorous academy. Start for free and get access to 3 free Answer Sheet evaluations and 2 Prelims Full Mock Tests.</p>
           <button className="btn btn-primary large gold-glow-animation">Secure Your Free Trial Session</button>
